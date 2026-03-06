@@ -1,0 +1,34 @@
+plugins {
+    id 'java'
+}
+
+group = 'it.unicam.cs.ids'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation 'org.mockito:mockito-junit-jupiter:5.5.0'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    testCompileOnly 'org.projectlombok:lombok:1.18.42'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.42'
+
+    // --- Dipendenze per Lombok ---
+    compileOnly 'org.projectlombok:lombok:1.18.42'
+    annotationProcessor 'org.projectlombok:lombok:1.18.42'
+
+    // --- Dipendenze per JPA (tramite Hibernate) ---
+    implementation 'org.hibernate.orm:hibernate-core:7.2.4.Final'
+
+    // --- Dipendenze per il Database H2 ---
+    runtimeOnly 'com.h2database:h2:2.2.224'
+}
+
+test {
+    useJUnitPlatform()
+}
