@@ -50,7 +50,7 @@ public class HackathonRepository implements IHackathonRepository {
 
     @Override
     public List<Hackathon> getAll() {
-        return List.of();
+        return em.createQuery("SELECT h FROM Hackathon h", Hackathon.class).getResultList();
     }
 
 }

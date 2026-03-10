@@ -63,10 +63,10 @@ public class Hackathon {
     )
     private List<StaffUser> mentors;
 
-    // Per ora diciamo a JPA di ignorare questi campi finché non mapperemo anche queste classi
-    @Transient
+    @OneToMany(mappedBy = "subscribedHackathon")
     private List<Team> teams;
 
+    // Per ora diciamo a JPA di ignorare questi campi finché non mapperemo anche queste classi
     @Transient
     private List<Submission> submissions; //list<String>?
 

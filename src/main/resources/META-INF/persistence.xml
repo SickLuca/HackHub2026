@@ -11,6 +11,8 @@
         <class>it.unicam.cs.ids.models.abstractions.User</class>
         <class>it.unicam.cs.ids.models.StaffUser</class>
         <class>it.unicam.cs.ids.models.Hackathon</class>
+        <class>it.unicam.cs.ids.models.DefaultUser</class>
+        <class>it.unicam.cs.ids.models.Team</class>
 
         <properties>
             <property name="jakarta.persistence.jdbc.driver" value="org.h2.Driver"/>

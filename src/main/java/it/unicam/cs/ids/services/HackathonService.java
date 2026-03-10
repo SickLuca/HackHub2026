@@ -1,6 +1,7 @@
 package it.unicam.cs.ids.services;
 
 import it.unicam.cs.ids.dtos.CreateHackathonDTO;
+import it.unicam.cs.ids.dtos.HackathonResponseDTO;
 import it.unicam.cs.ids.models.Hackathon;
 import it.unicam.cs.ids.models.StaffUser;
 import it.unicam.cs.ids.repositories.abstractions.IHackathonRepository;
@@ -92,7 +93,28 @@ public class HackathonService implements IHackathonService {
     }
 
     @Override
-    public List<Hackathon> getAllHackathon() {
-        return List.of();
+    public List<HackathonResponseDTO> getAllHackathons() {
+        List<Hackathon> hackathons = hackathonRepository.getAll();
+
+        if (hackathons.isEmpty()) return null;
+
+        return hackathons.stream()
+                .map(h -> new HackathonResponseDTO(
+                        h.getId(),
+                        h.getName(),
+                        h.getStartDate(),
+                        h.getEndDate(),
+                        h.getRegistrationDeadline(),
+                        h.getSubmitDeadline(),
+                        h.getRegulation(),
+                        h.getCashPrize(),
+                        h.getLocation(),
+                        h.getMaxDimensionOfTeam(),
+                        h.getStatus(),
+                        h.getOrganizer().getName() + " " + h.getOrganizer().getSurname(),
+                        h.getJudge().getName() + " " + h.getJudge().getSurname(),
+                        h.getMentors().stream().map(m -> m.getName() + " " + m.getSurname()).toList()
+                ))
+                .toList();
     }
 }
