@@ -19,9 +19,9 @@ public class HackathonService implements IHackathonService {
     // Aggiungiamo il repository per recuperare gli utenti dal DB!
     private final IStaffUserRepository staffUserRepository;
 
-    private final Validator<Hackathon> hackathonValidator;
+    private final Validator<CreateHackathonDTO> hackathonValidator;
 
-    public HackathonService(IHackathonRepository hackathonRepository, IStaffUserRepository staffUserRepository, Validator<Hackathon> hackathonValidator) {
+    public HackathonService(IHackathonRepository hackathonRepository, IStaffUserRepository staffUserRepository, Validator<CreateHackathonDTO> hackathonValidator) {
         this.hackathonRepository = hackathonRepository;
         this.hackathonValidator = hackathonValidator;
         this.staffUserRepository = staffUserRepository;
@@ -29,6 +29,7 @@ public class HackathonService implements IHackathonService {
 
     @Override
     public Hackathon addHackathon(CreateHackathonDTO request) {
+        hackathonValidator.validate(request);
 
         // 1. Recupero l'Organizzatore.
         // TODO: In futuro questo ID arriverà dal token di autenticazione di chi fa la richiesta.
@@ -70,11 +71,7 @@ public class HackathonService implements IHackathonService {
 
                 .build();
 
-        if (hackathonValidator.validate(hackathon)) {
-            return hackathonRepository.create(hackathon);
-        } else {
-            throw new IllegalArgumentException("Hackathon creation failed: invalid data");
-        }
+        return hackathonRepository.create(hackathon);
     }
 
     @Override

@@ -13,6 +13,7 @@
         <class>it.unicam.cs.ids.models.Hackathon</class>
         <class>it.unicam.cs.ids.models.DefaultUser</class>
         <class>it.unicam.cs.ids.models.Team</class>
+        <class>it.unicam.cs.ids.models.Submission</class>
 
         <properties>
             <property name="jakarta.persistence.jdbc.driver" value="org.h2.Driver"/>

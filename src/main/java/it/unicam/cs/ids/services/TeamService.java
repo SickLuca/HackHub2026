@@ -24,11 +24,11 @@ public class TeamService implements ITeamService {
 
     private final ITeamRepository teamRepository;
     private final IDefaultUserRepository defaultUserRepository;
-    private final Validator<Team> teamValidator;
+    private final Validator<CreateTeamDTO> teamValidator;
     private final IHackathonRepository hackathonRepository;
     private final ISubmissionRepository submissionRepository;
 
-    public TeamService(ITeamRepository teamRepository, IDefaultUserRepository defaultUserRepository, Validator<Team> teamValidator, IHackathonRepository hackathonRepository, ISubmissionRepository submissionRepository) {
+    public TeamService(ITeamRepository teamRepository, IDefaultUserRepository defaultUserRepository, Validator<CreateTeamDTO> teamValidator, IHackathonRepository hackathonRepository, ISubmissionRepository submissionRepository) {
         this.teamRepository = teamRepository;
         this.defaultUserRepository = defaultUserRepository;
         this.teamValidator = teamValidator;
@@ -38,6 +38,8 @@ public class TeamService implements ITeamService {
 
     @Override
     public Team createTeam(CreateTeamDTO request) {
+        teamValidator.validate(request); // Se fallisce, lancia l'eccezione ed esce dal metodo
+
         // 1. Recupero l'utente dal Database
         DefaultUser creator = defaultUserRepository.getById(request.creatorId());
         if (creator == null) {
@@ -55,18 +57,13 @@ public class TeamService implements ITeamService {
         newTeam.setMembers(new ArrayList<>());
         newTeam.getMembers().add(creator);
 
-        if (teamValidator.validate(newTeam)) {
-            newTeam = teamRepository.create(newTeam);
+        newTeam = teamRepository.create(newTeam);
 
-            // 5. Aggiornamento dell'utente creatore: gli assegno il team e gli cambio ruolo
-            creator.setTeam(newTeam);
-            creator.setRole(UserRole.TEAM_MEMBER);
-            defaultUserRepository.update(creator);
+        creator.setTeam(newTeam);
+        creator.setRole(UserRole.TEAM_MEMBER);
+        defaultUserRepository.update(creator);
 
-            return newTeam;
-        } else {
-            throw new IllegalArgumentException("Team creation failed: invalid data");
-        }
+        return newTeam;
     }
 
     @Override

@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -22,7 +23,7 @@ public class Team {
     private String name;
 
     @OneToMany(mappedBy = "team")
-    private List<DefaultUser> members;
+    private List<DefaultUser> members = new ArrayList<>();;
 
     @ManyToOne
     @JoinColumn(name = "hackathon_id")
@@ -30,6 +31,6 @@ public class Team {
 
     //TODO controllare che non sballa nulla
     @OneToMany(mappedBy = "team")
-    private List<Submission> submissions;
+    private List<Submission> submissions = new ArrayList<>();;
 
 }

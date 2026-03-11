@@ -1,24 +1,21 @@
 package it.unicam.cs.ids;
 
 import it.unicam.cs.ids.controllers.TeamController;
-import it.unicam.cs.ids.dtos.CreateHackathonDTO;
-import it.unicam.cs.ids.dtos.CreateTeamDTO;
-import it.unicam.cs.ids.dtos.HackathonResponseDTO;
-import it.unicam.cs.ids.dtos.SubscribeTeamDTO;
-import it.unicam.cs.ids.models.DefaultUser;
-import it.unicam.cs.ids.models.Hackathon;
-import it.unicam.cs.ids.models.StaffUser;
-import it.unicam.cs.ids.models.Team;
+import it.unicam.cs.ids.dtos.*;
+import it.unicam.cs.ids.models.*;
 import it.unicam.cs.ids.models.utils.StaffRole;
 import it.unicam.cs.ids.models.utils.UserRole;
 import it.unicam.cs.ids.repositories.*;
 import it.unicam.cs.ids.repositories.abstractions.*;
 import it.unicam.cs.ids.services.HackathonService;
+import it.unicam.cs.ids.services.SubmissionService;
 import it.unicam.cs.ids.services.TeamService;
 import it.unicam.cs.ids.services.abstractions.IHackathonService;
+import it.unicam.cs.ids.services.abstractions.ISubmissionService;
 import it.unicam.cs.ids.services.abstractions.ITeamService;
-import it.unicam.cs.ids.validators.HackathonValidator;
-import it.unicam.cs.ids.validators.TeamValidator;
+import it.unicam.cs.ids.validators.CreateHackathonValidator;
+import it.unicam.cs.ids.validators.CreateSubmissionValidator;
+import it.unicam.cs.ids.validators.CreateTeamValidator;
 import it.unicam.cs.ids.validators.abstractions.Validator;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
@@ -36,16 +33,19 @@ public class Main {
         // 1. "Dependency Injection" manuale (Quello che farà Spring in futuro)
         IStaffUserRepository staffRepo = new StaffUserRepository(em);
         HackathonRepository hackRepo = new HackathonRepository(em);
-        Validator<Hackathon> validator = new HackathonValidator();
+        Validator<CreateHackathonDTO> validator = new CreateHackathonValidator();
         IHackathonService hackathonService = new HackathonService(hackRepo, staffRepo, validator);
         ISubmissionRepository submissionRepo = new SubmissionRepository(em);
 
         // NUOVE DIPENDENZE PER IL TEAM
         IDefaultUserRepository defaultUserRepo = new DefaultUserRepository(em);
         ITeamRepository teamRepo = new TeamRepository(em);
-        Validator<Team> teamValidator = new TeamValidator();
+        Validator<CreateTeamDTO> teamValidator = new CreateTeamValidator();
         ITeamService teamService = new TeamService(teamRepo, defaultUserRepo, teamValidator, hackRepo, submissionRepo);
         TeamController teamController = new TeamController(teamService);
+
+        Validator<CreateSubmissionDTO> submissionValidator = new CreateSubmissionValidator();
+        ISubmissionService submissionService = new SubmissionService(teamRepo, hackRepo, submissionRepo, submissionValidator);
 
         try {
             StaffUser organizer = new StaffUser();
@@ -175,6 +175,41 @@ public class Main {
             } catch (IllegalStateException ex) {
                 System.out.println("Verifica superata! Il sistema ha bloccato la doppia iscrizione con il messaggio: " + ex.getMessage());
             }
+
+            System.out.println("\n--- 6. Simulazione Sottomissione Progetto ---");
+
+            CreateSubmissionDTO subRequest1 = new CreateSubmissionDTO(
+                    enrolledTeam.getId(),
+                    createdHackathon.getId(),
+                    "https://github.com/spring-booters/hackhub",
+                    "Ecco la nostra piattaforma per la gestione degli Hackathon!",
+                    null // La data verrà generata automaticamente dal Service
+            );
+
+            Submission primaSottomissione = submissionService.addSubmission(subRequest1);
+
+            System.out.println("SUCCESSO! Sottomissione creata nel Database.");
+            System.out.println("ID Sottomissione: " + primaSottomissione.getId());
+            System.out.println("URL Progetto: " + primaSottomissione.getProjectUrl());
+            System.out.println("Data invio: " + primaSottomissione.getSubmissionDate());
+
+            System.out.println("\n--- 7. Simulazione Aggiornamento Sottomissione ---");
+            System.out.println("Il team ha trovato un bug e invia un nuovo URL prima della scadenza...");
+
+            CreateSubmissionDTO subRequest2 = new CreateSubmissionDTO(
+                    enrolledTeam.getId(),
+                    createdHackathon.getId(),
+                    "https://github.com/spring-booters/hackhub-v2-fixed",
+                    "Versione corretta senza bug!",
+                    null
+            );
+
+            Submission sottomissioneAggiornata = submissionService.addSubmission(subRequest2);
+
+            System.out.println("SUCCESSO! Sottomissione aggiornata.");
+            System.out.println("ID Sottomissione (dovrebbe essere lo stesso di prima): " + sottomissioneAggiornata.getId());
+            System.out.println("Nuovo URL Progetto: " + sottomissioneAggiornata.getProjectUrl());
+            System.out.println("Nuova Descrizione: " + sottomissioneAggiornata.getDescription());
 
         } catch (Exception e) {
             System.err.println("\nERRORE: " + e.getMessage());
