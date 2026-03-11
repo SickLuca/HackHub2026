@@ -22,7 +22,12 @@ public class TeamRepository implements ITeamRepository {
     }
 
     @Override public Team delete(Long id) { return null; }
-    @Override public Team update(Team team) { return null; }
+
+    @Override public Team update(Team team) {
+        em.getTransaction().begin();
+        Team updated = em.merge(team);
+        em.getTransaction().commit();
+        return updated; }
 
     @Override
     public Team getById(Long id) {

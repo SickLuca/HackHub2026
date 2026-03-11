@@ -28,4 +28,8 @@ public class Team {
     @JoinColumn(name = "hackathon_id")
     private Hackathon subscribedHackathon;
 
+    //TODO controllare che non sballa nulla
+    @OneToMany(mappedBy = "team")
+    private List<Submission> submissions;
+
 }

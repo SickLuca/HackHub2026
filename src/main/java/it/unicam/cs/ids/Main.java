@@ -4,20 +4,15 @@ import it.unicam.cs.ids.controllers.TeamController;
 import it.unicam.cs.ids.dtos.CreateHackathonDTO;
 import it.unicam.cs.ids.dtos.CreateTeamDTO;
 import it.unicam.cs.ids.dtos.HackathonResponseDTO;
+import it.unicam.cs.ids.dtos.SubscribeTeamDTO;
 import it.unicam.cs.ids.models.DefaultUser;
 import it.unicam.cs.ids.models.Hackathon;
 import it.unicam.cs.ids.models.StaffUser;
 import it.unicam.cs.ids.models.Team;
 import it.unicam.cs.ids.models.utils.StaffRole;
 import it.unicam.cs.ids.models.utils.UserRole;
-import it.unicam.cs.ids.repositories.DefaultUserRepository;
-import it.unicam.cs.ids.repositories.HackathonRepository;
-import it.unicam.cs.ids.repositories.StaffUserRepository;
-import it.unicam.cs.ids.repositories.TeamRepository;
-import it.unicam.cs.ids.repositories.abstractions.IDefaultUserRepository;
-import it.unicam.cs.ids.repositories.abstractions.IHackathonRepository;
-import it.unicam.cs.ids.repositories.abstractions.IStaffUserRepository;
-import it.unicam.cs.ids.repositories.abstractions.ITeamRepository;
+import it.unicam.cs.ids.repositories.*;
+import it.unicam.cs.ids.repositories.abstractions.*;
 import it.unicam.cs.ids.services.HackathonService;
 import it.unicam.cs.ids.services.TeamService;
 import it.unicam.cs.ids.services.abstractions.IHackathonService;
@@ -40,15 +35,16 @@ public class Main {
 
         // 1. "Dependency Injection" manuale (Quello che farà Spring in futuro)
         IStaffUserRepository staffRepo = new StaffUserRepository(em);
-        IHackathonRepository hackRepo = new HackathonRepository(em);
+        HackathonRepository hackRepo = new HackathonRepository(em);
         Validator<Hackathon> validator = new HackathonValidator();
         IHackathonService hackathonService = new HackathonService(hackRepo, staffRepo, validator);
+        ISubmissionRepository submissionRepo = new SubmissionRepository(em);
 
         // NUOVE DIPENDENZE PER IL TEAM
         IDefaultUserRepository defaultUserRepo = new DefaultUserRepository(em);
         ITeamRepository teamRepo = new TeamRepository(em);
         Validator<Team> teamValidator = new TeamValidator();
-        ITeamService teamService = new TeamService(teamRepo, defaultUserRepo, teamValidator);
+        ITeamService teamService = new TeamService(teamRepo, defaultUserRepo, teamValidator, hackRepo, submissionRepo);
         TeamController teamController = new TeamController(teamService);
 
         try {
@@ -154,6 +150,31 @@ public class Main {
             team.setName("The Spring Booters 2.0");
             teamRepo.update(team);
             System.out.println("SUCCESSO! Team aggiornato nel Database." + " - Nome: " + teamRepo.getById(createdTeam.getId()).getName());
+
+
+            // --- 5. Simulazione Iscrizione Team all'Hackathon ---
+            System.out.println("\n--- 5. Simulazione Iscrizione Team all'Hackathon ---");
+
+            // Usiamo il DTO creato in precedenza per iscrivere il team appena creato all'hackathon appena creato
+            SubscribeTeamDTO enrollRequest = new SubscribeTeamDTO(
+                    createdTeam.getId(),
+                    createdHackathon.getId()
+            );
+
+            Team enrolledTeam = teamController.subscribeToHackathon(enrollRequest);
+
+            System.out.println("SUCCESSO! Team iscritto all'Hackathon.");
+            System.out.println("Il team '" + enrolledTeam.getName() + "' è ora ufficialmente iscritto all'hackathon: " + enrolledTeam.getSubscribedHackathon().getName());
+
+            Team team2 = teamRepo.getById(enrolledTeam.getId());
+            System.out.println(team2.getSubscribedHackathon().getName());
+            // Verifica di un vincolo (Opzionale ma utile): proviamo a iscriverlo di nuovo per vedere se l'eccezione scatta
+            try {
+                System.out.println("Test: provo a re-iscrivere il team per verificare le regole di business...");
+                teamController.subscribeToHackathon(enrollRequest);
+            } catch (IllegalStateException ex) {
+                System.out.println("Verifica superata! Il sistema ha bloccato la doppia iscrizione con il messaggio: " + ex.getMessage());
+            }
 
         } catch (Exception e) {
             System.err.println("\nERRORE: " + e.getMessage());
