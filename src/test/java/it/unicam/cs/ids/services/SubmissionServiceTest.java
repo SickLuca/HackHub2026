@@ -4,127 +4,153 @@ import it.unicam.cs.ids.dtos.CreateSubmissionDTO;
 import it.unicam.cs.ids.models.Hackathon;
 import it.unicam.cs.ids.models.Submission;
 import it.unicam.cs.ids.models.Team;
-import it.unicam.cs.ids.models.utils.HackathonStatus;
-import it.unicam.cs.ids.repositories.HackathonRepository;
-import it.unicam.cs.ids.repositories.SubmissionRepository;
-import it.unicam.cs.ids.repositories.TeamRepository;
-import it.unicam.cs.ids.validators.CreateSubmissionValidator;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.Persistence;
-import org.junit.jupiter.api.*;
+import it.unicam.cs.ids.repositories.abstractions.IHackathonRepository;
+import it.unicam.cs.ids.repositories.abstractions.ISubmissionRepository;
+import it.unicam.cs.ids.repositories.abstractions.ITeamRepository;
+import it.unicam.cs.ids.validators.abstractions.Validator;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class SubmissionServiceTest {
 
-    private static EntityManagerFactory emf;
-    private EntityManager em;
+    @Mock
+    private ITeamRepository teamRepository;
 
-    // Repository e Service da testare
-    private TeamRepository teamRepo;
-    private HackathonRepository hackRepo;
-    private SubmissionRepository submissionRepo;
+    @Mock
+    private IHackathonRepository hackathonRepository;
+
+    @Mock
+    private ISubmissionRepository submissionRepository;
+
+    @Mock
+    private Validator<CreateSubmissionDTO> submissionValidator;
+
+    @InjectMocks
     private SubmissionService submissionService;
 
-    // Dati finti da usare nei test
-    private Team testTeam;
-    private Hackathon testHackathon;
-
-    @BeforeAll
-    static void initAll() {
-        // Viene eseguito UNA SOLA VOLTA per tutta la classe di test
-        emf = Persistence.createEntityManagerFactory("HackHubPU");
-    }
+    private CreateSubmissionDTO validRequest;
+    private Team mockTeam;
+    private Hackathon mockHackathon;
 
     @BeforeEach
     void setUp() {
-        // Viene eseguito PRIMA di OGNI SINGOLO @Test
-        em = emf.createEntityManager();
-
-        teamRepo = new TeamRepository(em);
-        hackRepo = new HackathonRepository(em);
-        submissionRepo = new SubmissionRepository(em);
-
-        submissionService = new SubmissionService(
-                teamRepo, hackRepo, submissionRepo, new CreateSubmissionValidator()
+        validRequest = new CreateSubmissionDTO(
+                10L, 100L,
+                "https://github.com/team/project",
+                "Descrizione del progetto",
+                LocalDateTime.now()
         );
 
-        // Prepariamo i dati di base nel DB (un Hackathon e un Team iscritto)
-        testHackathon = new Hackathon();
-        testHackathon.setName("Test Hackathon " + System.currentTimeMillis()); // Evitiamo problemi anche qui!
-        testHackathon.setSubmitDeadline(LocalDateTime.now().plusDays(5));
-        testHackathon.setStatus(HackathonStatus.REGISTRATION);
-        testHackathon = hackRepo.create(testHackathon);
+        mockHackathon = new Hackathon();
+        mockHackathon.setId(100L);
+        // Impostiamo una scadenza nel futuro per simulare un hackathon aperto
+        mockHackathon.setSubmitDeadline(LocalDateTime.now().plusDays(5));
 
-        testTeam = new Team();
-        // Aggiungiamo un identificativo univoco (il millisecondo attuale) al nome
-        testTeam.setName("Test Team " + System.currentTimeMillis());
-        testTeam.setSubscribedHackathon(testHackathon);
-        testTeam = teamRepo.create(testTeam);
-    }
-
-    @AfterEach
-    void tearDown() {
-        // Puliamo l'EntityManager DOPO ogni test per isolarli l'uno dall'altro
-        if (em.isOpen()) {
-            em.close();
-        }
-    }
-
-    @AfterAll
-    static void tearDownAll() {
-        if (emf.isOpen()) {
-            emf.close();
-        }
-    }
-
-    // --- I NOSTRI TEST ---
-
-    @Test
-    @DisplayName("Dovrebbe creare una sottomissione con successo se i dati sono validi")
-    void shouldCreateSubmissionSuccessfully() {
-        // Arrange (Preparo i dati)
-        CreateSubmissionDTO request = new CreateSubmissionDTO(
-                testTeam.getId(),
-                testHackathon.getId(),
-                "https://github.com/test",
-                "Descrizione Test",
-                null
-        );
-
-        // Act (Eseguo il metodo da testare)
-        Submission result = submissionService.addSubmission(request);
-
-        // Assert (Verifico che il risultato sia quello atteso)
-        assertNotNull(result.getId(), "L'ID della sottomissione non dovrebbe essere nullo (è stata salvata)");
-        assertEquals("https://github.com/test", result.getProjectUrl());
-        assertEquals(testTeam.getId(), result.getTeam().getId());
+        mockTeam = new Team();
+        mockTeam.setId(10L);
+        mockTeam.setSubscribedHackathon(mockHackathon);
+        mockTeam.setSubmissions(new ArrayList<>());
     }
 
     @Test
-    @DisplayName("Dovrebbe lanciare eccezione se la scadenza è passata")
-    void shouldThrowExceptionWhenDeadlinePassed() {
-        // Arrange: Modifichiamo l'hackathon per far scadere il tempo
-        testHackathon.setSubmitDeadline(LocalDateTime.now().minusDays(1)); // Scaduto ieri!
-        hackRepo.update(testHackathon);
+    void addSubmission_Success() {
+        // Arrange
+        doNothing().when(submissionValidator).validate(validRequest);
+        when(teamRepository.getById(10L)).thenReturn(mockTeam);
+        when(hackathonRepository.getById(100L)).thenReturn(mockHackathon);
 
-        CreateSubmissionDTO request = new CreateSubmissionDTO(
-                testTeam.getId(),
-                testHackathon.getId(),
-                "https://github.com/test",
-                "Descrizione Test",
-                null
-        );
+        // Simuliamo che il create ritorni l'oggetto stesso che gli viene passato
+        when(submissionRepository.create(any(Submission.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        // Act & Assert: Verifichiamo che il metodo lanci l'eccezione corretta
-        IllegalStateException exception = assertThrows(
-                IllegalStateException.class,
-                () -> submissionService.addSubmission(request)
-        );
+        // Act
+        Submission result = submissionService.addSubmission(validRequest);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals("https://github.com/team/project", result.getProjectUrl());
+        assertEquals(mockTeam, result.getTeam());
+        assertEquals(mockHackathon, result.getHackathon());
+
+        // Verifichiamo che la sottomissione sia stata aggiunta alla lista del team
+        assertEquals(1, mockTeam.getSubmissions().size());
+
+        // Verifichiamo le interazioni (il create viene chiamato nel tuo codice attuale, lo verifichiamo almeno 1 volta)
+        verify(submissionRepository, atLeastOnce()).create(any(Submission.class));
+    }
+
+    @Test
+    void addSubmission_TeamNotSubscribedToHackathon_ThrowsException() {
+        // Arrange
+        doNothing().when(submissionValidator).validate(validRequest);
+
+        // Assegniamo al team un hackathon diverso
+        Hackathon anotherHackathon = new Hackathon();
+        anotherHackathon.setId(999L);
+        mockTeam.setSubscribedHackathon(anotherHackathon);
+
+        when(teamRepository.getById(10L)).thenReturn(mockTeam);
+        when(hackathonRepository.getById(100L)).thenReturn(mockHackathon);
+
+        // Act & Assert
+        IllegalStateException exception = assertThrows(IllegalStateException.class, () -> {
+            submissionService.addSubmission(validRequest);
+        });
+
+        assertEquals("The team is not subscribed to this Hackathon.", exception.getMessage());
+        verify(submissionRepository, never()).create(any());
+    }
+
+    @Test
+    void addSubmission_DeadlinePassed_ThrowsException() {
+        // Arrange
+        doNothing().when(submissionValidator).validate(validRequest);
+
+        // Impostiamo la scadenza nel passato!
+        mockHackathon.setSubmitDeadline(LocalDateTime.now().minusDays(1));
+
+        when(teamRepository.getById(10L)).thenReturn(mockTeam);
+        when(hackathonRepository.getById(100L)).thenReturn(mockHackathon);
+
+        // Act & Assert
+        IllegalStateException exception = assertThrows(IllegalStateException.class, () -> {
+            submissionService.addSubmission(validRequest);
+        });
 
         assertEquals("The submission deadline has already passed.", exception.getMessage());
+        verify(submissionRepository, never()).create(any());
+    }
+
+    @Test
+    void addSubmission_SubmissionAlreadyExists_ThrowsException() {
+        // Arrange
+        doNothing().when(submissionValidator).validate(validRequest);
+
+        // Inseriamo giÃ  una sottomissione fittizia per questo hackathon nella lista del team
+        Submission existingSubmission = new Submission();
+        existingSubmission.setHackathon(mockHackathon);
+        mockTeam.getSubmissions().add(existingSubmission);
+
+        when(teamRepository.getById(10L)).thenReturn(mockTeam);
+        when(hackathonRepository.getById(100L)).thenReturn(mockHackathon);
+
+        // Act & Assert
+        IllegalStateException exception = assertThrows(IllegalStateException.class, () -> {
+            submissionService.addSubmission(validRequest);
+        });
+
+        assertEquals("A submission for this Hackathon already exists.", exception.getMessage());
+        verify(submissionRepository, never()).create(any());
     }
 }

@@ -12,7 +12,7 @@ public class HackathonController {
 
     private IHackathonService hackathonService;
 
-    private HackathonController(IHackathonService hackathonService) {
+    public HackathonController(IHackathonService hackathonService) {
         this.hackathonService = hackathonService;
     }
 

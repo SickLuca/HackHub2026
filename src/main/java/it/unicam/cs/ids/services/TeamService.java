@@ -1,24 +1,19 @@
 package it.unicam.cs.ids.services;
 
-import it.unicam.cs.ids.dtos.CreateSubmissionDTO;
 import it.unicam.cs.ids.dtos.CreateTeamDTO;
 import it.unicam.cs.ids.dtos.SubscribeTeamDTO;
 import it.unicam.cs.ids.models.DefaultUser;
 import it.unicam.cs.ids.models.Hackathon;
-import it.unicam.cs.ids.models.Submission;
 import it.unicam.cs.ids.models.Team;
 import it.unicam.cs.ids.models.utils.HackathonStatus;
 import it.unicam.cs.ids.models.utils.UserRole;
-import it.unicam.cs.ids.repositories.HackathonRepository;
 import it.unicam.cs.ids.repositories.abstractions.IDefaultUserRepository;
 import it.unicam.cs.ids.repositories.abstractions.IHackathonRepository;
-import it.unicam.cs.ids.repositories.abstractions.ISubmissionRepository;
 import it.unicam.cs.ids.repositories.abstractions.ITeamRepository;
 import it.unicam.cs.ids.services.abstractions.ITeamService;
 import it.unicam.cs.ids.validators.abstractions.Validator;
 
 import java.util.ArrayList;
-import java.util.Optional;
 
 public class TeamService implements ITeamService {
 
@@ -26,14 +21,12 @@ public class TeamService implements ITeamService {
     private final IDefaultUserRepository defaultUserRepository;
     private final Validator<CreateTeamDTO> teamValidator;
     private final IHackathonRepository hackathonRepository;
-    private final ISubmissionRepository submissionRepository;
 
-    public TeamService(ITeamRepository teamRepository, IDefaultUserRepository defaultUserRepository, Validator<CreateTeamDTO> teamValidator, IHackathonRepository hackathonRepository, ISubmissionRepository submissionRepository) {
+    public TeamService(ITeamRepository teamRepository, IDefaultUserRepository defaultUserRepository, Validator<CreateTeamDTO> teamValidator, IHackathonRepository hackathonRepository) {
         this.teamRepository = teamRepository;
         this.defaultUserRepository = defaultUserRepository;
         this.teamValidator = teamValidator;
         this.hackathonRepository = hackathonRepository;
-        this.submissionRepository = submissionRepository;
     }
 
     @Override
@@ -60,14 +53,14 @@ public class TeamService implements ITeamService {
         newTeam = teamRepository.create(newTeam);
 
         creator.setTeam(newTeam);
-        creator.setRole(UserRole.TEAM_MEMBER);
+        creator.setRole(UserRole.TEAM_LEADER);
         defaultUserRepository.update(creator);
 
         return newTeam;
     }
 
     @Override
-    public Team subscribeHackathon(SubscribeTeamDTO request) {
+    public Team subscribeToHackathon(SubscribeTeamDTO request) {
         Team team = teamRepository.getById(request.teamId());
         if (team == null) {
             throw new IllegalArgumentException("Team not found in the system");
@@ -88,6 +81,11 @@ public class TeamService implements ITeamService {
 
         if (team.getMembers().size() > hackathon.getMaxDimensionOfTeam()) {
             throw new IllegalStateException("Team is too big for the hackathon");
+        }
+
+        DefaultUser user = defaultUserRepository.getById(request.userId());
+        if (user.getRole() != UserRole.TEAM_LEADER) {
+            throw new IllegalStateException("User is not a team leader");
         }
 
         //Finite le validazioni, aggiorniamo sul database

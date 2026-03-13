@@ -7,6 +7,5 @@ import it.unicam.cs.ids.models.Team;
 public interface ITeamService {
     Team createTeam(CreateTeamDTO request);
 
-    Team subscribeHackathon(SubscribeTeamDTO request);
+    Team subscribeToHackathon(SubscribeTeamDTO request);
 }
-

@@ -1,6 +1,7 @@
 package it.unicam.cs.ids.services;
 
 import it.unicam.cs.ids.dtos.CreateSubmissionDTO;
+import it.unicam.cs.ids.dtos.UpdateSubmissionDTO;
 import it.unicam.cs.ids.models.Hackathon;
 import it.unicam.cs.ids.models.Submission;
 import it.unicam.cs.ids.models.Team;
@@ -74,16 +75,27 @@ public class SubmissionService implements ISubmissionService {
             // prossima chiamata il team sembrerà non avere sottomissioni.
             team.getSubmissions().add(savedSubmission);
 
-            return submissionRepository.create(newSubmission);
+            return savedSubmission;
         } else {
-            // Se esiste, ESTRAIAMO l'oggetto dall'Optional e lo AGGIORNIAMO
-            Submission existingSubmission = sub.get(); // <--- LA SOLUZIONE È QUI
+            //TODO: oppure mappiamo la richiesta di creazione ad un update e ritorniamo l'update :)
 
-            existingSubmission.setProjectUrl(request.projectUrl());
-            existingSubmission.setDescription(request.description());
-            existingSubmission.setSubmissionDate(java.time.LocalDateTime.now());
-
-            return submissionRepository.update(existingSubmission);
+            // Se esiste, informiamo che una sottomissione è già presente e che è possibile modificarla
+            throw new IllegalStateException("A submission for this Hackathon already exists.");
         }
+    }
+
+    @Override
+    public Submission updateSubmission(UpdateSubmissionDTO request) {
+        Submission submission = submissionRepository.getById(request.submissionId());
+        if (submission == null) {
+            throw new IllegalArgumentException("Submission not found.");
+        }
+        if (submission.getHackathon().getSubmitDeadline().isBefore(LocalDateTime.now())) {
+            throw new IllegalStateException("The submission deadline has already passed.");
+        }
+        submission.setProjectUrl(request.projectUrl());
+        submission.setDescription(request.description());
+        submission.setSubmissionDate(LocalDateTime.now());
+        return submissionRepository.update(submission);
     }
 }

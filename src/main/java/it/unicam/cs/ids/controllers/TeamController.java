@@ -18,6 +18,6 @@ public class TeamController {
     }
 
     public Team subscribeToHackathon(SubscribeTeamDTO request) {
-        return teamService.subscribeHackathon(request);
+        return teamService.subscribeToHackathon(request);
     }
 }
