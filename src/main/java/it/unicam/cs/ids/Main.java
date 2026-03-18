@@ -42,6 +42,7 @@ public class Main {
             setupArchitecture(em);
 
             System.out.println("Architettura inizializzata correttamente.");
+                        
             System.out.println("L'applicazione Ã¨ pronta per ricevere richieste (es. tramite CLI o layer REST futuro).");
 
 
