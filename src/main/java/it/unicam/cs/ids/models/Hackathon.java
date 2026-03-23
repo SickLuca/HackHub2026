@@ -65,7 +65,7 @@ public class Hackathon {
     private List<StaffUser> mentors;
 
     @OneToMany(mappedBy = "subscribedHackathon")
-    private List<Team> teams;
+    private List<Team> teams = new ArrayList<>();
 
     @OneToMany(mappedBy = "hackathon", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Submission> submissions = new ArrayList<>();

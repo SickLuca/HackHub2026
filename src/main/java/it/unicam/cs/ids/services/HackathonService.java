@@ -25,7 +25,7 @@ public class HackathonService implements IHackathonService {
     }
 
     @Override
-    public Hackathon addHackathon(CreateHackathonDTO request) {
+    public HackathonResponseDTO addHackathon(CreateHackathonDTO request) {
         hackathonValidator.validate(request);
 
         // 1. Recupero l'Organizzatore.
@@ -68,21 +68,23 @@ public class HackathonService implements IHackathonService {
 
                 .build();
 
-        return unitOfWork.getHackathonRepository().create(hackathon);
+        unitOfWork.getHackathonRepository().create(hackathon);
+
+        return mapToDTO(hackathon);
     }
 
     @Override
-    public Hackathon updateHackathon(Hackathon hackathon) {
+    public HackathonResponseDTO updateHackathon(Hackathon hackathon) {
         return null;
     }
 
     @Override
-    public Hackathon deleteHackathon(Long id) {
+    public HackathonResponseDTO deleteHackathon(Long id) {
         return null;
     }
 
     @Override
-    public Hackathon getHackathonById(Long id) {
+    public HackathonResponseDTO getHackathonById(Long id) {
         return null;
     }
 
@@ -92,23 +94,32 @@ public class HackathonService implements IHackathonService {
 
         if (hackathons.isEmpty()) return null;
 
-        return hackathons.stream()
-                .map(h -> new HackathonResponseDTO(
-                        h.getId(),
-                        h.getName(),
-                        h.getStartDate(),
-                        h.getEndDate(),
-                        h.getRegistrationDeadline(),
-                        h.getSubmitDeadline(),
-                        h.getRegulation(),
-                        h.getCashPrize(),
-                        h.getLocation(),
-                        h.getMaxDimensionOfTeam(),
-                        h.getStatus(),
-                        h.getOrganizer().getName() + " " + h.getOrganizer().getSurname(),
-                        h.getJudge().getName() + " " + h.getJudge().getSurname(),
-                        h.getMentors().stream().map(m -> m.getName() + " " + m.getSurname()).toList()
-                ))
-                .toList();
+        List<HackathonResponseDTO> hackathonDTOs = new ArrayList<>();
+        for (Hackathon h : hackathons) {
+            hackathonDTOs.add(mapToDTO(h));
+        }
+
+        return hackathonDTOs;
+    }
+
+
+    private HackathonResponseDTO mapToDTO(Hackathon h) {
+        return new HackathonResponseDTO(
+                h.getId(),
+                h.getName(),
+                h.getStartDate(),
+                h.getEndDate(),
+                h.getRegistrationDeadline(),
+                h.getSubmitDeadline(),
+                h.getRegulation(),
+                h.getCashPrize(),
+                h.getLocation(),
+                h.getMaxDimensionOfTeam(),
+                h.getStatus(),
+                h.getOrganizer().getName() + " " + h.getOrganizer().getSurname(),
+                h.getJudge().getName() + " " + h.getJudge().getSurname(),
+                h.getMentors().stream().map(m -> m.getName() + " " + m.getSurname()).toList()
+
+        );
     }
 }

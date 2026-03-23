@@ -2,6 +2,7 @@ package it.unicam.cs.ids.services;
 
 import it.unicam.cs.ids.dtos.CreateTeamDTO;
 import it.unicam.cs.ids.dtos.SubscribeTeamDTO;
+import it.unicam.cs.ids.dtos.TeamResponseDTO;
 import it.unicam.cs.ids.models.DefaultUser;
 import it.unicam.cs.ids.models.Hackathon;
 import it.unicam.cs.ids.models.Team;
@@ -27,7 +28,7 @@ public class TeamService implements ITeamService {
     }
 
     @Override
-    public Team createTeam(CreateTeamDTO request) {
+    public TeamResponseDTO createTeam(CreateTeamDTO request) {
         teamValidator.validate(request); // Se fallisce, lancia l'eccezione ed esce dal metodo
 
         // 1. Recupero l'utente dal Database
@@ -47,17 +48,17 @@ public class TeamService implements ITeamService {
         newTeam.setMembers(new ArrayList<>());
         newTeam.getMembers().add(creator);
 
-        newTeam = unitOfWork.getTeamRepository().create(newTeam);
+        unitOfWork.getTeamRepository().create(newTeam);
 
         creator.setTeam(newTeam);
         creator.setRole(UserRole.TEAM_LEADER);
         unitOfWork.getDefaultUserRepository().update(creator);
 
-        return newTeam;
+        return mapToDTO(newTeam);
     }
 
     @Override
-    public Team subscribeToHackathon(SubscribeTeamDTO request) {
+    public TeamResponseDTO subscribeToHackathon(SubscribeTeamDTO request) {
         Team team = unitOfWork.getTeamRepository().getById(request.teamId());
         if (team == null) {
             throw new IllegalArgumentException("Team not found in the system");
@@ -87,8 +88,22 @@ public class TeamService implements ITeamService {
 
         //Finite le validazioni, aggiorniamo sul database
         team.setSubscribedHackathon(hackathon);
-        return unitOfWork.getTeamRepository().update(team);
+        hackathon.getTeams().add(team);
 
+        unitOfWork.getTeamRepository().update(team);
+
+
+        return mapToDTO(team);
+
+    }
+
+    private TeamResponseDTO mapToDTO(Team team) {
+        return new TeamResponseDTO(
+                team.getId(),
+                team.getName(),
+                team.getMembers().stream().map(m -> m.getName() + " " + m.getSurname()).toList(),
+                team.getSubscribedHackathon() == null ? "Not subscribed to any Hackathon" : team.getSubscribedHackathon().getName()
+        );
     }
 
 }

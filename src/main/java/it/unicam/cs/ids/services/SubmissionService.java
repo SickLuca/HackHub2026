@@ -1,6 +1,7 @@
 package it.unicam.cs.ids.services;
 
 import it.unicam.cs.ids.dtos.CreateSubmissionDTO;
+import it.unicam.cs.ids.dtos.SubmissionResponseDTO;
 import it.unicam.cs.ids.dtos.UpdateSubmissionDTO;
 import it.unicam.cs.ids.models.Hackathon;
 import it.unicam.cs.ids.models.Submission;
@@ -28,7 +29,7 @@ public class SubmissionService implements ISubmissionService {
     }
 
     @Override
-    public Submission addSubmission(CreateSubmissionDTO request) {
+    public SubmissionResponseDTO addSubmission(CreateSubmissionDTO request) {
         submissionValidator.validate(request);
 
         Team team = unitOfWork.getTeamRepository().getById(request.teamId());
@@ -71,8 +72,9 @@ public class SubmissionService implements ISubmissionService {
             // Aggiorniamo la lista in memoria del Team, altrimenti alla
             // prossima chiamata il team sembrerà non avere sottomissioni.
             team.getSubmissions().add(savedSubmission);
+            hackathon.getSubmissions().add(savedSubmission);
 
-            return savedSubmission;
+            return mapToDTO(savedSubmission);
         } else {
             //TODO: oppure mappiamo la richiesta di creazione ad un update e ritorniamo l'update :)
 
@@ -82,7 +84,7 @@ public class SubmissionService implements ISubmissionService {
     }
 
     @Override
-    public Submission updateSubmission(UpdateSubmissionDTO request) {
+    public SubmissionResponseDTO updateSubmission(UpdateSubmissionDTO request) {
         Submission submission = unitOfWork.getSubmissionRepository().getById(request.submissionId());
         if (submission == null) {
             throw new IllegalArgumentException("Submission not found.");
@@ -93,6 +95,20 @@ public class SubmissionService implements ISubmissionService {
         submission.setProjectUrl(request.projectUrl());
         submission.setDescription(request.description());
         submission.setSubmissionDate(LocalDateTime.now());
-        return unitOfWork.getSubmissionRepository().update(submission);
+        unitOfWork.getSubmissionRepository().update(submission);
+
+        return mapToDTO(submission);
+    }
+
+
+    private SubmissionResponseDTO mapToDTO(Submission submission) {
+        return new SubmissionResponseDTO(
+                submission.getId(),
+                submission.getTeam().getName(),
+                submission.getHackathon().getName(),
+                submission.getProjectUrl(),
+                submission.getDescription(),
+                submission.getSubmissionDate()
+        );
     }
 }

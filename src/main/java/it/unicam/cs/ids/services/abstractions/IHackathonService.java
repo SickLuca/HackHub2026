@@ -7,10 +7,10 @@ import it.unicam.cs.ids.models.Hackathon;
 import java.util.List;
 
 public interface IHackathonService {
-    Hackathon addHackathon(CreateHackathonDTO hackathon);
-    Hackathon updateHackathon(Hackathon hackathon);
-    Hackathon deleteHackathon(Long id);
-    Hackathon getHackathonById(Long id);
+    HackathonResponseDTO addHackathon(CreateHackathonDTO hackathon);
+    HackathonResponseDTO updateHackathon(Hackathon hackathon);
+    HackathonResponseDTO deleteHackathon(Long id);
+    HackathonResponseDTO getHackathonById(Long id);
     List<HackathonResponseDTO> getAllHackathons();
 
 }
