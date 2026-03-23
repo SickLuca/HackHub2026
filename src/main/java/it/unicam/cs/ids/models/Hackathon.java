@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 //TODO: Jpa, da fare prima di altri TODO
@@ -66,10 +67,8 @@ public class Hackathon {
     @OneToMany(mappedBy = "subscribedHackathon")
     private List<Team> teams;
 
-    // Per ora diciamo a JPA di ignorare questi campi finché non mapperemo anche queste classi
-    @Transient
-    private List<Submission> submissions; //list<String>?
-
+    @OneToMany(mappedBy = "hackathon", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Submission> submissions = new ArrayList<>();
     @Transient
     private Team vincitore;
 

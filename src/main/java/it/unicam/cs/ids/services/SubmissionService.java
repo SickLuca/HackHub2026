@@ -10,6 +10,7 @@ import it.unicam.cs.ids.repositories.abstractions.IHackathonRepository;
 import it.unicam.cs.ids.repositories.abstractions.ISubmissionRepository;
 import it.unicam.cs.ids.repositories.abstractions.ITeamRepository;
 import it.unicam.cs.ids.services.abstractions.ISubmissionService;
+import it.unicam.cs.ids.utils.unitOfWork.IUnitOfWork;
 import it.unicam.cs.ids.validators.abstractions.Validator;
 
 import java.time.LocalDateTime;
@@ -17,16 +18,12 @@ import java.util.Optional;
 
 public class SubmissionService implements ISubmissionService {
 
-    private final ITeamRepository teamRepository;
-    private final IHackathonRepository hackathonRepository;
-    private final ISubmissionRepository submissionRepository;
+    private final IUnitOfWork unitOfWork;
     private final Validator<CreateSubmissionDTO> submissionValidator;
 
 
-    public SubmissionService(ITeamRepository teamRepository, IHackathonRepository hackathonRepository, ISubmissionRepository submissionRepository, Validator<CreateSubmissionDTO> submissionValidator) {
-        this.teamRepository = teamRepository;
-        this.hackathonRepository = hackathonRepository;
-        this.submissionRepository = submissionRepository;
+    public SubmissionService(IUnitOfWork unitOfWork, Validator<CreateSubmissionDTO> submissionValidator) {
+        this.unitOfWork = unitOfWork;
         this.submissionValidator = submissionValidator;
     }
 
@@ -34,10 +31,10 @@ public class SubmissionService implements ISubmissionService {
     public Submission addSubmission(CreateSubmissionDTO request) {
         submissionValidator.validate(request);
 
-        Team team = teamRepository.getById(request.teamId());
+        Team team = unitOfWork.getTeamRepository().getById(request.teamId());
         if (team == null) throw new IllegalArgumentException("Team not found.");
 
-        Hackathon hackathon = hackathonRepository.getById(request.hackathonId());
+        Hackathon hackathon = unitOfWork.getHackathonRepository().getById(request.hackathonId());
         if (hackathon == null) throw new IllegalArgumentException("Hackathon not found.");
 
         // Controllo 1: Il team è iscritto a QUESTO hackathon?
@@ -68,7 +65,7 @@ public class SubmissionService implements ISubmissionService {
             newSubmission.setSubmissionDate(LocalDateTime.now());
 
             // 1. Salviamo nel database per generare l'ID
-            Submission savedSubmission = submissionRepository.create(newSubmission);
+            Submission savedSubmission = unitOfWork.getSubmissionRepository().create(newSubmission);
 
             // 2. SINCRONIZZAZIONE DELLA RELAZIONE BIDIREZIONALE!
             // Aggiorniamo la lista in memoria del Team, altrimenti alla
@@ -86,7 +83,7 @@ public class SubmissionService implements ISubmissionService {
 
     @Override
     public Submission updateSubmission(UpdateSubmissionDTO request) {
-        Submission submission = submissionRepository.getById(request.submissionId());
+        Submission submission = unitOfWork.getSubmissionRepository().getById(request.submissionId());
         if (submission == null) {
             throw new IllegalArgumentException("Submission not found.");
         }
@@ -96,6 +93,6 @@ public class SubmissionService implements ISubmissionService {
         submission.setProjectUrl(request.projectUrl());
         submission.setDescription(request.description());
         submission.setSubmissionDate(LocalDateTime.now());
-        return submissionRepository.update(submission);
+        return unitOfWork.getSubmissionRepository().update(submission);
     }
 }

@@ -1,4 +1,4 @@
-package it.unicam.cs.ids.utils;
+package it.unicam.cs.ids.utils.builder;
 
 import it.unicam.cs.ids.models.Hackathon;
 import it.unicam.cs.ids.models.StaffUser;
@@ -7,7 +7,7 @@ import it.unicam.cs.ids.models.utils.HackathonStatus;
 import java.time.LocalDateTime;
 import java.util.List;
 
-public class ConcreteHackathonBuilder implements HackathonBuilder{
+public class ConcreteHackathonBuilder implements HackathonBuilder {
     private final Hackathon hackathon;
 
     public ConcreteHackathonBuilder() {

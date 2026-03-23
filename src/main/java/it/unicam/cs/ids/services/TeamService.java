@@ -11,22 +11,19 @@ import it.unicam.cs.ids.repositories.abstractions.IDefaultUserRepository;
 import it.unicam.cs.ids.repositories.abstractions.IHackathonRepository;
 import it.unicam.cs.ids.repositories.abstractions.ITeamRepository;
 import it.unicam.cs.ids.services.abstractions.ITeamService;
+import it.unicam.cs.ids.utils.unitOfWork.IUnitOfWork;
 import it.unicam.cs.ids.validators.abstractions.Validator;
 
 import java.util.ArrayList;
 
 public class TeamService implements ITeamService {
 
-    private final ITeamRepository teamRepository;
-    private final IDefaultUserRepository defaultUserRepository;
+    private final IUnitOfWork unitOfWork;
     private final Validator<CreateTeamDTO> teamValidator;
-    private final IHackathonRepository hackathonRepository;
 
-    public TeamService(ITeamRepository teamRepository, IDefaultUserRepository defaultUserRepository, Validator<CreateTeamDTO> teamValidator, IHackathonRepository hackathonRepository) {
-        this.teamRepository = teamRepository;
-        this.defaultUserRepository = defaultUserRepository;
+    public TeamService(IUnitOfWork unitOfWork, Validator<CreateTeamDTO> teamValidator) {
+        this.unitOfWork = unitOfWork;
         this.teamValidator = teamValidator;
-        this.hackathonRepository = hackathonRepository;
     }
 
     @Override
@@ -34,7 +31,7 @@ public class TeamService implements ITeamService {
         teamValidator.validate(request); // Se fallisce, lancia l'eccezione ed esce dal metodo
 
         // 1. Recupero l'utente dal Database
-        DefaultUser creator = defaultUserRepository.getById(request.creatorId());
+        DefaultUser creator = unitOfWork.getDefaultUserRepository().getById(request.creatorId());
         if (creator == null) {
             throw new IllegalArgumentException("User not found in the system");
         }
@@ -50,23 +47,23 @@ public class TeamService implements ITeamService {
         newTeam.setMembers(new ArrayList<>());
         newTeam.getMembers().add(creator);
 
-        newTeam = teamRepository.create(newTeam);
+        newTeam = unitOfWork.getTeamRepository().create(newTeam);
 
         creator.setTeam(newTeam);
         creator.setRole(UserRole.TEAM_LEADER);
-        defaultUserRepository.update(creator);
+        unitOfWork.getDefaultUserRepository().update(creator);
 
         return newTeam;
     }
 
     @Override
     public Team subscribeToHackathon(SubscribeTeamDTO request) {
-        Team team = teamRepository.getById(request.teamId());
+        Team team = unitOfWork.getTeamRepository().getById(request.teamId());
         if (team == null) {
             throw new IllegalArgumentException("Team not found in the system");
         }
 
-        Hackathon hackathon = hackathonRepository.getById(request.hackathonId());
+        Hackathon hackathon = unitOfWork.getHackathonRepository().getById(request.hackathonId());
         if (hackathon == null) {
             throw new IllegalArgumentException("Hackathon not found in the system");
         }
@@ -83,14 +80,14 @@ public class TeamService implements ITeamService {
             throw new IllegalStateException("Team is too big for the hackathon");
         }
 
-        DefaultUser user = defaultUserRepository.getById(request.userId());
+        DefaultUser user = unitOfWork.getDefaultUserRepository().getById(request.userId());
         if (user.getRole() != UserRole.TEAM_LEADER) {
             throw new IllegalStateException("User is not a team leader");
         }
 
         //Finite le validazioni, aggiorniamo sul database
         team.setSubscribedHackathon(hackathon);
-        return teamRepository.update(team);
+        return unitOfWork.getTeamRepository().update(team);
 
     }
 

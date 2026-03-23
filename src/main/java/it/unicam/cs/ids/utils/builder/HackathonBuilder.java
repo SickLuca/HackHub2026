@@ -1,9 +1,8 @@
-package it.unicam.cs.ids.utils;
+package it.unicam.cs.ids.utils.builder;
 
 import it.unicam.cs.ids.models.Hackathon;
 import it.unicam.cs.ids.models.StaffUser;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 

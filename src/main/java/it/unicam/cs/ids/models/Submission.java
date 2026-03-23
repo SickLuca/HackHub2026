@@ -17,8 +17,6 @@ public class Submission {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    //Non deve essere specificato necessariamente nel team la bidirezionalità ma è buona norma
-    //Il team contiene eventualmente una List<Submission> che è riferita a Submissions di hackathons diversi
     @ManyToOne
     @JoinColumn(name = "team_id")
     private Team team;
