@@ -1,9 +1,8 @@
 package it.unicam.cs.ids.services.abstractions;
 
-import it.unicam.cs.ids.dtos.CreateTeamDTO;
-import it.unicam.cs.ids.dtos.SubscribeTeamDTO;
-import it.unicam.cs.ids.dtos.TeamResponseDTO;
-import it.unicam.cs.ids.models.Team;
+import it.unicam.cs.ids.dtos.requests.CreateTeamDTO;
+import it.unicam.cs.ids.dtos.requests.SubscribeTeamDTO;
+import it.unicam.cs.ids.dtos.responses.TeamResponseDTO;
 
 public interface ITeamService {
     TeamResponseDTO createTeam(CreateTeamDTO request);

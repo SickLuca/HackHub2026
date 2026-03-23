@@ -1,11 +1,9 @@
 package it.unicam.cs.ids.services;
 
-import it.unicam.cs.ids.dtos.CreateHackathonDTO;
-import it.unicam.cs.ids.dtos.HackathonResponseDTO;
+import it.unicam.cs.ids.dtos.requests.CreateHackathonDTO;
+import it.unicam.cs.ids.dtos.responses.HackathonResponseDTO;
 import it.unicam.cs.ids.models.Hackathon;
 import it.unicam.cs.ids.models.StaffUser;
-import it.unicam.cs.ids.repositories.abstractions.IHackathonRepository;
-import it.unicam.cs.ids.repositories.abstractions.IStaffUserRepository;
 import it.unicam.cs.ids.services.abstractions.IHackathonService;
 import it.unicam.cs.ids.utils.builder.ConcreteHackathonBuilder;
 import it.unicam.cs.ids.utils.unitOfWork.IUnitOfWork;

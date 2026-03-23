@@ -1,6 +1,6 @@
 package it.unicam.cs.ids.validators;
 
-import it.unicam.cs.ids.dtos.CreateHackathonDTO;
+import it.unicam.cs.ids.dtos.requests.CreateHackathonDTO;
 import it.unicam.cs.ids.validators.abstractions.Validator;
 
 public class CreateHackathonValidator implements Validator<CreateHackathonDTO> {

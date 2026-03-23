@@ -1,6 +1,4 @@
-package it.unicam.cs.ids.dtos;
-
-import it.unicam.cs.ids.models.StaffUser;
+package it.unicam.cs.ids.dtos.requests;
 
 import java.time.LocalDateTime;
 import java.util.List;

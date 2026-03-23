@@ -1,4 +1,4 @@
-package it.unicam.cs.ids.dtos;
+package it.unicam.cs.ids.dtos.responses;
 
 import java.util.List;
 

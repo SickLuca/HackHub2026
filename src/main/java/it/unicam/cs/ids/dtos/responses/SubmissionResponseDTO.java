@@ -1,7 +1,6 @@
-package it.unicam.cs.ids.dtos;
+package it.unicam.cs.ids.dtos.responses;
 
 
-import it.unicam.cs.ids.models.Team;
 import java.time.LocalDateTime;
 
 public record SubmissionResponseDTO(

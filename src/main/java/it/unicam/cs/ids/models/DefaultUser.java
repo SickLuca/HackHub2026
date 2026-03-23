@@ -7,6 +7,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Table(name = "default_users")
 @Getter
@@ -21,9 +24,13 @@ public class DefaultUser extends User {
     @JoinColumn(name = "team_id")
     private Team team;
 
+    @OneToMany(mappedBy = "toUser")
+    private List<Invitation> invitations = new ArrayList<>();
+
     DefaultUser(Long id, UserRole role) {
         super(id);
         this.role = role;
     }
+
 
 }

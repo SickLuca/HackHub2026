@@ -1,6 +1,6 @@
 package it.unicam.cs.ids.validators;
 
-import it.unicam.cs.ids.dtos.CreateSubmissionDTO;
+import it.unicam.cs.ids.dtos.requests.CreateSubmissionDTO;
 import it.unicam.cs.ids.validators.abstractions.Validator;
 
 public class CreateSubmissionValidator implements Validator<CreateSubmissionDTO> {

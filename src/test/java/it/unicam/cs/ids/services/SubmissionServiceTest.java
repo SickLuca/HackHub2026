@@ -1,7 +1,7 @@
 package it.unicam.cs.ids.services;
 
-import it.unicam.cs.ids.dtos.CreateSubmissionDTO;
-import it.unicam.cs.ids.dtos.SubmissionResponseDTO;
+import it.unicam.cs.ids.dtos.requests.CreateSubmissionDTO;
+import it.unicam.cs.ids.dtos.responses.SubmissionResponseDTO;
 import it.unicam.cs.ids.models.Hackathon;
 import it.unicam.cs.ids.models.Submission;
 import it.unicam.cs.ids.models.Team;

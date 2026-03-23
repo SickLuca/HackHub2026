@@ -9,13 +9,15 @@ public class UnitOfWork implements IUnitOfWork{
     private final IStaffUserRepository staffUserRepository;
     private final ISubmissionRepository submissionRepository;
     private final ITeamRepository teamRepository;
+    private final IInvitationRepository invitationRepository;
 
-    public UnitOfWork(IDefaultUserRepository defaultUserRepository, IHackathonRepository hackathonRepository, IStaffUserRepository staffUserRepository, ISubmissionRepository submissionRepository, ITeamRepository teamRepository) {
+    public UnitOfWork(IDefaultUserRepository defaultUserRepository, IHackathonRepository hackathonRepository, IStaffUserRepository staffUserRepository, ISubmissionRepository submissionRepository, ITeamRepository teamRepository, IInvitationRepository invitationRepository) {
         this.defaultUserRepository = defaultUserRepository;
         this.hackathonRepository = hackathonRepository;
         this.staffUserRepository = staffUserRepository;
         this.submissionRepository = submissionRepository;
         this.teamRepository = teamRepository;
+        this.invitationRepository = invitationRepository;
     }
 
 
@@ -42,6 +44,11 @@ public class UnitOfWork implements IUnitOfWork{
     @Override
     public ITeamRepository getTeamRepository() {
         return this.teamRepository;
+    }
+
+    @Override
+    public IInvitationRepository getInvitationRepository() {
+        return this.invitationRepository;
     }
 
     @Override

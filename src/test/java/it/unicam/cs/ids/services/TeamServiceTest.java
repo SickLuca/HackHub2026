@@ -1,8 +1,8 @@
 package it.unicam.cs.ids.services;
 
-import it.unicam.cs.ids.dtos.CreateTeamDTO;
-import it.unicam.cs.ids.dtos.SubscribeTeamDTO;
-import it.unicam.cs.ids.dtos.TeamResponseDTO;
+import it.unicam.cs.ids.dtos.requests.CreateTeamDTO;
+import it.unicam.cs.ids.dtos.requests.SubscribeTeamDTO;
+import it.unicam.cs.ids.dtos.responses.TeamResponseDTO;
 import it.unicam.cs.ids.models.DefaultUser;
 import it.unicam.cs.ids.models.Hackathon;
 import it.unicam.cs.ids.models.Team;

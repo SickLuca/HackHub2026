@@ -3,9 +3,9 @@ package it.unicam.cs.ids;
 import it.unicam.cs.ids.controllers.HackathonController;
 import it.unicam.cs.ids.controllers.SubmissionController;
 import it.unicam.cs.ids.controllers.TeamController;
-import it.unicam.cs.ids.dtos.CreateHackathonDTO;
-import it.unicam.cs.ids.dtos.CreateSubmissionDTO;
-import it.unicam.cs.ids.dtos.CreateTeamDTO;
+import it.unicam.cs.ids.dtos.requests.CreateHackathonDTO;
+import it.unicam.cs.ids.dtos.requests.CreateSubmissionDTO;
+import it.unicam.cs.ids.dtos.requests.CreateTeamDTO;
 import it.unicam.cs.ids.repositories.*;
 import it.unicam.cs.ids.repositories.abstractions.*;
 import it.unicam.cs.ids.services.HackathonService;
@@ -69,8 +69,9 @@ public class Main {
         IDefaultUserRepository defaultUserRepo = new DefaultUserRepository(em);
         ITeamRepository teamRepo = new TeamRepository(em);
         ISubmissionRepository submissionRepo = new SubmissionRepository(em);
+        IInvitationRepository invitationRepo = new InvitationRepository(em);
 
-        IUnitOfWork unitOfWork = new UnitOfWork(defaultUserRepo, hackRepo, staffRepo, submissionRepo, teamRepo);
+        IUnitOfWork unitOfWork = new UnitOfWork(defaultUserRepo, hackRepo, staffRepo, submissionRepo, teamRepo, invitationRepo);
 
         // --- 2. Inizializzazione Validators ---
         Validator<CreateHackathonDTO> hackathonValidator = new CreateHackathonValidator();

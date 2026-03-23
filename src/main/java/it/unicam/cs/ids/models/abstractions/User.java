@@ -1,13 +1,10 @@
 package it.unicam.cs.ids.models.abstractions;
 
-
-import it.unicam.cs.ids.models.Hackathon;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -25,6 +22,7 @@ public abstract class User {
 
     private String surname;
 
+    @Column(unique = true)
     private String email;
 
     private String password;

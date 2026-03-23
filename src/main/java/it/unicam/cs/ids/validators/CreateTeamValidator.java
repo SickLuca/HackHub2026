@@ -1,6 +1,6 @@
 package it.unicam.cs.ids.validators;
 
-import it.unicam.cs.ids.dtos.CreateTeamDTO;
+import it.unicam.cs.ids.dtos.requests.CreateTeamDTO;
 import it.unicam.cs.ids.validators.abstractions.Validator;
 
 public class CreateTeamValidator implements Validator<CreateTeamDTO> {

@@ -1,16 +1,13 @@
 package it.unicam.cs.ids.services;
 
-import it.unicam.cs.ids.dtos.CreateTeamDTO;
-import it.unicam.cs.ids.dtos.SubscribeTeamDTO;
-import it.unicam.cs.ids.dtos.TeamResponseDTO;
+import it.unicam.cs.ids.dtos.requests.CreateTeamDTO;
+import it.unicam.cs.ids.dtos.requests.SubscribeTeamDTO;
+import it.unicam.cs.ids.dtos.responses.TeamResponseDTO;
 import it.unicam.cs.ids.models.DefaultUser;
 import it.unicam.cs.ids.models.Hackathon;
 import it.unicam.cs.ids.models.Team;
 import it.unicam.cs.ids.models.utils.HackathonStatus;
 import it.unicam.cs.ids.models.utils.UserRole;
-import it.unicam.cs.ids.repositories.abstractions.IDefaultUserRepository;
-import it.unicam.cs.ids.repositories.abstractions.IHackathonRepository;
-import it.unicam.cs.ids.repositories.abstractions.ITeamRepository;
 import it.unicam.cs.ids.services.abstractions.ITeamService;
 import it.unicam.cs.ids.utils.unitOfWork.IUnitOfWork;
 import it.unicam.cs.ids.validators.abstractions.Validator;

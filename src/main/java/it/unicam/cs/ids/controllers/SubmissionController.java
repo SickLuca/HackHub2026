@@ -1,13 +1,10 @@
 package it.unicam.cs.ids.controllers;
 
-import it.unicam.cs.ids.dtos.CreateSubmissionDTO;
-// import it.unicam.cs.ids.dtos.UpdateSubmissionDTO;
-import it.unicam.cs.ids.dtos.SubmissionResponseDTO;
-import it.unicam.cs.ids.dtos.UpdateSubmissionDTO;
-import it.unicam.cs.ids.models.Submission;
+import it.unicam.cs.ids.dtos.requests.CreateSubmissionDTO;
+// import it.unicam.cs.ids.dtos.requests.UpdateSubmissionDTO;
+import it.unicam.cs.ids.dtos.responses.SubmissionResponseDTO;
+import it.unicam.cs.ids.dtos.requests.UpdateSubmissionDTO;
 import it.unicam.cs.ids.services.abstractions.ISubmissionService;
-
-import java.util.List;
 
 public class SubmissionController {
 

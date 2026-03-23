@@ -1,7 +1,7 @@
 package it.unicam.cs.ids.services.abstractions;
 
-import it.unicam.cs.ids.dtos.CreateHackathonDTO;
-import it.unicam.cs.ids.dtos.HackathonResponseDTO;
+import it.unicam.cs.ids.dtos.requests.CreateHackathonDTO;
+import it.unicam.cs.ids.dtos.responses.HackathonResponseDTO;
 import it.unicam.cs.ids.models.Hackathon;
 
 import java.util.List;
