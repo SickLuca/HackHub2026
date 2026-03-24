@@ -1,9 +1,11 @@
 package it.unicam.cs.ids.services;
 
+import it.unicam.cs.ids.dtos.requests.AddMentorDTO;
 import it.unicam.cs.ids.dtos.requests.CreateHackathonDTO;
 import it.unicam.cs.ids.dtos.responses.HackathonResponseDTO;
 import it.unicam.cs.ids.models.Hackathon;
 import it.unicam.cs.ids.models.StaffUser;
+import it.unicam.cs.ids.models.utils.HackathonStatus;
 import it.unicam.cs.ids.services.abstractions.IHackathonService;
 import it.unicam.cs.ids.utils.builder.ConcreteHackathonBuilder;
 import it.unicam.cs.ids.utils.unitOfWork.IUnitOfWork;
@@ -98,6 +100,45 @@ public class HackathonService implements IHackathonService {
         }
 
         return hackathonDTOs;
+    }
+
+    @Override
+    public HackathonResponseDTO addMentorToHackathon(AddMentorDTO request) {
+        // 1. Recupero l'Hackathon
+        Hackathon hackathon = unitOfWork.getHackathonRepository().getById(request.hackathonId());
+        if (hackathon == null) {
+            throw new IllegalArgumentException("Hackathon non trovato");
+        }
+
+        if (hackathon.getStatus() == HackathonStatus.FINISHED || hackathon.getStatus() == HackathonStatus.UNDER_EVALUATION) {
+            throw new IllegalStateException("Non puoi più aggiungere mentori a questo hackathon");
+        }
+
+        // 2. Controllo di sicurezza: chi fa la richiesta è davvero l'organizzatore di questo hackathon?
+        if (!hackathon.getOrganizer().getId().equals(request.organizerId())) {
+            throw new SecurityException("Solo l'organizzatore può aggiungere mentori a questo hackathon");
+        }
+
+        // 3. Recupero il Mentore da aggiungere
+        StaffUser mentor = unitOfWork.getStaffUserRepository().getById(request.mentorId());
+        if (mentor == null) {
+            throw new IllegalArgumentException("Mentore non trovato nel sistema");
+        }
+
+        // 4. Controllo duplicati: il mentore è già assegnato?
+        boolean isAlreadyMentor = hackathon.getMentors().stream()
+                .anyMatch(m -> m.getId().equals(mentor.getId()));
+
+        if (isAlreadyMentor) {
+            throw new IllegalStateException("Questo utente è già un mentore per questo hackathon");
+        }
+
+        // 5. Aggiunta e salvataggio
+        hackathon.getMentors().add(mentor);
+        unitOfWork.getHackathonRepository().update(hackathon);
+
+        // 6. Ritorno il DTO aggiornato
+        return mapToDTO(hackathon);
     }
 
 

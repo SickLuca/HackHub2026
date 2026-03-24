@@ -3,10 +3,7 @@ package it.unicam.cs.ids.repositories;
 import it.unicam.cs.ids.models.Hackathon;
 import it.unicam.cs.ids.repositories.abstractions.IHackathonRepository;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.Persistence;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class HackathonRepository implements IHackathonRepository {

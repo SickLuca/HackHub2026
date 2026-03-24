@@ -10,14 +10,22 @@ public class UnitOfWork implements IUnitOfWork{
     private final ISubmissionRepository submissionRepository;
     private final ITeamRepository teamRepository;
     private final IInvitationRepository invitationRepository;
+    private final ISupportRequestRepository supportRequestRepository;
 
-    public UnitOfWork(IDefaultUserRepository defaultUserRepository, IHackathonRepository hackathonRepository, IStaffUserRepository staffUserRepository, ISubmissionRepository submissionRepository, ITeamRepository teamRepository, IInvitationRepository invitationRepository) {
+    public UnitOfWork(IDefaultUserRepository defaultUserRepository,
+                      IHackathonRepository hackathonRepository,
+                      IStaffUserRepository staffUserRepository,
+                      ISubmissionRepository submissionRepository,
+                      ITeamRepository teamRepository,
+                      IInvitationRepository invitationRepository,
+                      ISupportRequestRepository supportRequestRepository) {
         this.defaultUserRepository = defaultUserRepository;
         this.hackathonRepository = hackathonRepository;
         this.staffUserRepository = staffUserRepository;
         this.submissionRepository = submissionRepository;
         this.teamRepository = teamRepository;
         this.invitationRepository = invitationRepository;
+        this.supportRequestRepository = supportRequestRepository;
     }
 
 
@@ -50,6 +58,9 @@ public class UnitOfWork implements IUnitOfWork{
     public IInvitationRepository getInvitationRepository() {
         return this.invitationRepository;
     }
+
+    @Override
+    public ISupportRequestRepository getSupportRequestRepository() {return this.supportRequestRepository;}
 
     @Override
     public void commit() {

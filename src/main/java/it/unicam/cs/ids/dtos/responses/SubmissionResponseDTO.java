@@ -9,6 +9,9 @@ public record SubmissionResponseDTO(
         String hackathonName,
         String projectUrl,
         String description,
-        LocalDateTime submissionDate
+        LocalDateTime submissionDate,
+        String status,
+        Integer score,
+        String feedback
 ) {
 }

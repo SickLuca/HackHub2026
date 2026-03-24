@@ -1,11 +1,14 @@
 package it.unicam.cs.ids.services;
 
 import it.unicam.cs.ids.dtos.requests.CreateSubmissionDTO;
+import it.unicam.cs.ids.dtos.requests.EvaluateSubmissionDTO;
 import it.unicam.cs.ids.dtos.responses.SubmissionResponseDTO;
 import it.unicam.cs.ids.dtos.requests.UpdateSubmissionDTO;
 import it.unicam.cs.ids.models.Hackathon;
 import it.unicam.cs.ids.models.Submission;
 import it.unicam.cs.ids.models.Team;
+import it.unicam.cs.ids.models.utils.HackathonStatus;
+import it.unicam.cs.ids.models.utils.SubmissionStatus;
 import it.unicam.cs.ids.services.abstractions.ISubmissionService;
 import it.unicam.cs.ids.utils.unitOfWork.IUnitOfWork;
 import it.unicam.cs.ids.validators.abstractions.Validator;
@@ -16,17 +19,19 @@ import java.util.Optional;
 public class SubmissionService implements ISubmissionService {
 
     private final IUnitOfWork unitOfWork;
-    private final Validator<CreateSubmissionDTO> submissionValidator;
+    private final Validator<CreateSubmissionDTO> createSubmissionValidator;
+    private final Validator<EvaluateSubmissionDTO> evaluateSubmissionValidator;
 
 
-    public SubmissionService(IUnitOfWork unitOfWork, Validator<CreateSubmissionDTO> submissionValidator) {
+    public SubmissionService(IUnitOfWork unitOfWork, Validator<CreateSubmissionDTO> submissionValidator, Validator<EvaluateSubmissionDTO> evaluateSubmissionValidator) {
         this.unitOfWork = unitOfWork;
-        this.submissionValidator = submissionValidator;
+        this.createSubmissionValidator = submissionValidator;
+        this.evaluateSubmissionValidator = evaluateSubmissionValidator;
     }
 
     @Override
     public SubmissionResponseDTO addSubmission(CreateSubmissionDTO request) {
-        submissionValidator.validate(request);
+        createSubmissionValidator.validate(request);
 
         Team team = unitOfWork.getTeamRepository().getById(request.teamId());
         if (team == null) throw new IllegalArgumentException("Team not found.");
@@ -60,6 +65,10 @@ public class SubmissionService implements ISubmissionService {
             newSubmission.setProjectUrl(request.projectUrl());
             newSubmission.setDescription(request.description());
             newSubmission.setSubmissionDate(LocalDateTime.now());
+            newSubmission.setStatus(SubmissionStatus.OPEN);
+            newSubmission.setScore(0);
+            newSubmission.setJudgeFeedback("");
+
 
             // 1. Salviamo nel database per generare l'ID
             Submission savedSubmission = unitOfWork.getSubmissionRepository().create(newSubmission);
@@ -96,6 +105,41 @@ public class SubmissionService implements ISubmissionService {
         return mapToDTO(submission);
     }
 
+    @Override
+    public SubmissionResponseDTO evaluateSubmission(EvaluateSubmissionDTO request) {
+        evaluateSubmissionValidator.validate(request);
+
+        // 1. Recupero la sottomissione
+        Submission submission = unitOfWork.getSubmissionRepository().getById(request.submissionId());
+        if (submission == null) {
+            throw new IllegalArgumentException("Sottomissione non trovata");
+        }
+
+        Hackathon hackathon = submission.getHackathon();
+
+        // 2. Controllo di sicurezza: chi valuta è davvero il giudice di questo Hackathon?
+        if (!hackathon.getJudge().getId().equals(request.judgeId())) {
+            throw new SecurityException("Non sei il giudice assegnato a questo Hackathon");
+        }
+
+        if (hackathon.getStatus() != HackathonStatus.IN_PROGRESS) {
+            throw new IllegalStateException("L'hackathon non è attualmente in fase di valutazione");
+        }
+
+        //Solo closed perchè non puoi gestirla se aperta o valutata
+        if (submission.getStatus() != SubmissionStatus.CLOSED ) {
+            throw new IllegalStateException("Non puoi gestire questa sottomissione");
+        }
+
+        // 5. Aggiornamento dell'entità
+        submission.setScore(request.score());
+        submission.setJudgeFeedback(request.feedback());
+
+        unitOfWork.getSubmissionRepository().update(submission);
+
+        return mapToDTO(submission);
+    }
+
 
     private SubmissionResponseDTO mapToDTO(Submission submission) {
         return new SubmissionResponseDTO(
@@ -104,7 +148,10 @@ public class SubmissionService implements ISubmissionService {
                 submission.getHackathon().getName(),
                 submission.getProjectUrl(),
                 submission.getDescription(),
-                submission.getSubmissionDate()
+                submission.getSubmissionDate(),
+                submission.getStatus().toString(),
+                submission.getScore(),
+                submission.getJudgeFeedback()
         );
     }
 }

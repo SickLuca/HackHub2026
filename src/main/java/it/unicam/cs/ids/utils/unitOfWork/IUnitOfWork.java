@@ -10,6 +10,7 @@ public interface IUnitOfWork {
     ISubmissionRepository getSubmissionRepository();
     ITeamRepository getTeamRepository();
     IInvitationRepository getInvitationRepository();
+    ISupportRequestRepository getSupportRequestRepository();
     void commit();
     void rollback();
 }

@@ -1,7 +1,7 @@
 package it.unicam.cs.ids.controllers;
 
 import it.unicam.cs.ids.dtos.requests.CreateSubmissionDTO;
-// import it.unicam.cs.ids.dtos.requests.UpdateSubmissionDTO;
+import it.unicam.cs.ids.dtos.requests.EvaluateSubmissionDTO;
 import it.unicam.cs.ids.dtos.responses.SubmissionResponseDTO;
 import it.unicam.cs.ids.dtos.requests.UpdateSubmissionDTO;
 import it.unicam.cs.ids.services.abstractions.ISubmissionService;
@@ -23,6 +23,11 @@ public class SubmissionController {
     //Metodo per il Membro del Team per aggiornare il progetto prima della scadenza
    public SubmissionResponseDTO updateSubmission(UpdateSubmissionDTO request) {
       return submissionService.updateSubmission(request);
+   }
+
+   //Metodo per il Giudice per valutare una sottomissione
+   public SubmissionResponseDTO evaluateSubmission(EvaluateSubmissionDTO request) {
+        return submissionService.evaluateSubmission(request);
    }
 
 //    // Metodo utile per il Giudice (o lo Staff) per recuperare tutte le sottomissioni di un hackathon

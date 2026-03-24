@@ -1,5 +1,6 @@
 package it.unicam.cs.ids.models;
 
+import it.unicam.cs.ids.models.utils.SubmissionStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -36,5 +37,9 @@ public class Submission {
 
     @Column(columnDefinition = "TEXT")
     private String judgeFeedback;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private SubmissionStatus status = SubmissionStatus.OPEN;
 
 }

@@ -6,6 +6,7 @@ import it.unicam.cs.ids.controllers.TeamController;
 import it.unicam.cs.ids.dtos.requests.CreateHackathonDTO;
 import it.unicam.cs.ids.dtos.requests.CreateSubmissionDTO;
 import it.unicam.cs.ids.dtos.requests.CreateTeamDTO;
+import it.unicam.cs.ids.dtos.requests.EvaluateSubmissionDTO;
 import it.unicam.cs.ids.repositories.*;
 import it.unicam.cs.ids.repositories.abstractions.*;
 import it.unicam.cs.ids.services.HackathonService;
@@ -19,6 +20,7 @@ import it.unicam.cs.ids.utils.unitOfWork.UnitOfWork;
 import it.unicam.cs.ids.validators.CreateHackathonValidator;
 import it.unicam.cs.ids.validators.CreateSubmissionValidator;
 import it.unicam.cs.ids.validators.CreateTeamValidator;
+import it.unicam.cs.ids.validators.EvaluateSubmissionRequestValidator;
 import it.unicam.cs.ids.validators.abstractions.Validator;
 
 import jakarta.persistence.EntityManager;
@@ -70,18 +72,20 @@ public class Main {
         ITeamRepository teamRepo = new TeamRepository(em);
         ISubmissionRepository submissionRepo = new SubmissionRepository(em);
         IInvitationRepository invitationRepo = new InvitationRepository(em);
+        ISupportRequestRepository supportRequestRepo = new SupportRequestRepository(em);
 
-        IUnitOfWork unitOfWork = new UnitOfWork(defaultUserRepo, hackRepo, staffRepo, submissionRepo, teamRepo, invitationRepo);
+        IUnitOfWork unitOfWork = new UnitOfWork(defaultUserRepo, hackRepo, staffRepo, submissionRepo, teamRepo, invitationRepo, supportRequestRepo);
 
         // --- 2. Inizializzazione Validators ---
         Validator<CreateHackathonDTO> hackathonValidator = new CreateHackathonValidator();
         Validator<CreateTeamDTO> teamValidator = new CreateTeamValidator();
         Validator<CreateSubmissionDTO> submissionValidator = new CreateSubmissionValidator();
+        Validator<EvaluateSubmissionDTO>evaluateSubmissionValidator = new EvaluateSubmissionRequestValidator();
 
         // --- 3. Inizializzazione Services ---
         IHackathonService hackathonService = new HackathonService(unitOfWork, hackathonValidator);
         ITeamService teamService = new TeamService(unitOfWork, teamValidator);
-        ISubmissionService submissionService = new SubmissionService(unitOfWork, submissionValidator);
+        ISubmissionService submissionService = new SubmissionService(unitOfWork, submissionValidator, evaluateSubmissionValidator);
 
         // --- 4. Inizializzazione Controllers ---
         HackathonController hackathonController = new HackathonController(hackathonService);

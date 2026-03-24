@@ -1,8 +1,8 @@
 package it.unicam.cs.ids.repositories;
 
-import it.unicam.cs.ids.models.Hackathon;
+
 import it.unicam.cs.ids.models.Invitation;
-import it.unicam.cs.ids.models.Submission;
+
 import it.unicam.cs.ids.repositories.abstractions.IInvitationRepository;
 import jakarta.persistence.EntityManager;
 

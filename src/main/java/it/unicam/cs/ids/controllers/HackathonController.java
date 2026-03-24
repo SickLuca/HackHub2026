@@ -1,5 +1,6 @@
 package it.unicam.cs.ids.controllers;
 
+import it.unicam.cs.ids.dtos.requests.AddMentorDTO;
 import it.unicam.cs.ids.dtos.requests.CreateHackathonDTO;
 import it.unicam.cs.ids.dtos.responses.HackathonResponseDTO;
 import it.unicam.cs.ids.services.abstractions.IHackathonService;
@@ -20,5 +21,9 @@ public class HackathonController {
 
     public List<HackathonResponseDTO> getAllHackathon() {
         return hackathonService.getAllHackathons();
+    }
+
+    public HackathonResponseDTO addMentorToHackathon(AddMentorDTO request) {
+        return hackathonService.addMentorToHackathon(request);
     }
 }
