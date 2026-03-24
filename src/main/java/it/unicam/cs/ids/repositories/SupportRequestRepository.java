@@ -18,7 +18,10 @@ public class SupportRequestRepository implements ISupportRequestRepository {
 
     @Override
     public SupportRequest create(SupportRequest supportRequest) {
-        return null;
+        entityManager.getTransaction().begin();
+        entityManager.persist(supportRequest);
+        entityManager.getTransaction().commit();
+        return supportRequest;
     }
 
     @Override

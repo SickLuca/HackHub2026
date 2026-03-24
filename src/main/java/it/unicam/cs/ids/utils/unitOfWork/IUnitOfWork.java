@@ -11,6 +11,7 @@ public interface IUnitOfWork {
     ITeamRepository getTeamRepository();
     IInvitationRepository getInvitationRepository();
     ISupportRequestRepository getSupportRequestRepository();
+    IReportRepository getReportRepository();
     void commit();
     void rollback();
 }

@@ -14,6 +14,7 @@ import it.unicam.cs.ids.utils.unitOfWork.IUnitOfWork;
 import it.unicam.cs.ids.validators.abstractions.Validator;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 public class SubmissionService implements ISubmissionService {
@@ -138,6 +139,52 @@ public class SubmissionService implements ISubmissionService {
         unitOfWork.getSubmissionRepository().update(submission);
 
         return mapToDTO(submission);
+    }
+
+    @Override
+    public List<SubmissionResponseDTO> getSubmissionsByHackathon(Long hackathonId, Long staffId) {
+        Hackathon hackathon = unitOfWork.getHackathonRepository().getById(hackathonId);
+        if (hackathon == null) {
+            throw new IllegalArgumentException("Hackathon non trovato.");
+        }
+
+        // Controllo Sicurezza: lo staff fa parte di questo hackathon?
+        if (!isStaffAssignedToHackathon(hackathon, staffId)) {
+            throw new SecurityException("Non sei autorizzato a visualizzare le sottomissioni di questo hackathon.");
+        }
+
+        List<Submission> submissions = unitOfWork.getSubmissionRepository().getByHackathon(hackathonId);
+
+        return submissions.stream()
+                .map(this::mapToDTO)
+                .toList();
+    }
+
+    @Override
+    public SubmissionResponseDTO getSubmissionDetails(Long submissionId, Long staffId) {
+        Submission submission = unitOfWork.getSubmissionRepository().getById(submissionId);
+        if (submission == null) {
+            throw new IllegalArgumentException("Sottomissione non trovata.");
+        }
+
+        // Controllo Sicurezza: lo staff fa parte dell'hackathon a cui appartiene questa sottomissione?
+        if (!isStaffAssignedToHackathon(submission.getHackathon(), staffId)) {
+            throw new SecurityException("Non sei autorizzato a visualizzare i dettagli di questa sottomissione.");
+        }
+
+        return mapToDTO(submission);
+    }
+
+    // Metodo helper privato per centralizzare il controllo degli accessi
+    private boolean isStaffAssignedToHackathon(Hackathon hackathon, Long staffId) {
+        // È l'organizzatore?
+        if (hackathon.getOrganizer().getId().equals(staffId)) return true;
+
+        // È il giudice?
+        if (hackathon.getJudge().getId().equals(staffId)) return true;
+
+        // È uno dei mentori?
+        return hackathon.getMentors().stream().anyMatch(m -> m.getId().equals(staffId));
     }
 
 

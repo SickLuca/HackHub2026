@@ -43,4 +43,12 @@ public class SubmissionRepository implements ISubmissionRepository {
     public List<Submission> getAll() {
         return List.of();
     }
+
+    @Override
+    public List<Submission> getByHackathon(Long hackathonId) {
+        return em.createQuery(
+                        "SELECT s FROM Submission s WHERE s.hackathon.id = :hackathonId", Submission.class)
+                .setParameter("hackathonId", hackathonId)
+                .getResultList();
+    }
 }

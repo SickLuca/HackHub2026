@@ -46,7 +46,7 @@ public class Main {
             setupArchitecture(em);
 
             System.out.println("Architettura inizializzata correttamente.");
-                        
+
             System.out.println("L'applicazione Ã¨ pronta per ricevere richieste (es. tramite CLI o layer REST futuro).");
 
 
@@ -73,8 +73,9 @@ public class Main {
         ISubmissionRepository submissionRepo = new SubmissionRepository(em);
         IInvitationRepository invitationRepo = new InvitationRepository(em);
         ISupportRequestRepository supportRequestRepo = new SupportRequestRepository(em);
+        IReportRepository reportRepo = new ReportRepository(em);
 
-        IUnitOfWork unitOfWork = new UnitOfWork(defaultUserRepo, hackRepo, staffRepo, submissionRepo, teamRepo, invitationRepo, supportRequestRepo);
+        IUnitOfWork unitOfWork = new UnitOfWork(defaultUserRepo, hackRepo, staffRepo, submissionRepo, teamRepo, invitationRepo, supportRequestRepo, reportRepo);
 
         // --- 2. Inizializzazione Validators ---
         Validator<CreateHackathonDTO> hackathonValidator = new CreateHackathonValidator();
