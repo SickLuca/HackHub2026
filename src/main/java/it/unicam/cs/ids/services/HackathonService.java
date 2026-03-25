@@ -40,7 +40,10 @@ public class HackathonService implements IHackathonService {
         if (judge == null) {
             throw new IllegalArgumentException("Judge not found in the system.");
         }
-
+        
+        if(request.mentorsIdS().isEmpty()){
+            throw new  IllegalArgumentException("At least one mentor is required.");
+        }
         // 3. Recupero i Mentori dal DB
         List<StaffUser> mentors = new ArrayList<>();
         for (Long mentorId : request.mentorsIdS()) {
