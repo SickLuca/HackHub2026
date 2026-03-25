@@ -49,6 +49,9 @@ public class ReportService implements IReportService {
         // 4. Salvataggio
         unitOfWork.getReportRepository().create(report);
 
+        //aggiorno la relazione bidirezionale in memoria
+        hackathon.getReports().add(report);
+
         // 5. Ritorno DTO
         return mapToDTO(report);
     }
@@ -79,7 +82,7 @@ public class ReportService implements IReportService {
             throw new SecurityException("Solo l'organizzatore può aggiornare lo stato di questa segnalazione.");
         }
 
-        if (report.getDecisionNote().isEmpty()) {
+        if (request.decisionNote() == null || request.decisionNote().isEmpty()) {
             throw new IllegalArgumentException("La decisione deve essere specificata prima di aggiornare lo stato della segnalazione.");
         }
 

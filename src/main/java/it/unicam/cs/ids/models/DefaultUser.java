@@ -27,10 +27,13 @@ public class DefaultUser extends User {
     @OneToMany(mappedBy = "toUser")
     private List<Invitation> invitations = new ArrayList<>();
 
-    DefaultUser(Long id, UserRole role) {
+    public DefaultUser(Long id, UserRole role) {
         super(id);
         this.role = role;
     }
 
 
+    public DefaultUser(Long id) {
+        super(id);
+    }
 }

@@ -79,6 +79,9 @@ public class InvitationService implements IInvitationService {
         //Aggiornamento utente sul db (non dovrebbe essere necessario per via di JPA che dopo il setToUser dovrebbe aver aggiornato le relazioni
         unitOfWork.getDefaultUserRepository().update(invitedUser);
 
+        //aggiorno relazione bidirezionale in memoria
+        team.getInvitations().add(savedInvitation);
+
         return mapToDTO(savedInvitation);
     }
 

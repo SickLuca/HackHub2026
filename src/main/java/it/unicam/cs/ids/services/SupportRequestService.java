@@ -57,6 +57,12 @@ public class SupportRequestService implements ISupportRequestService {
             // 3. Salvataggio
             unitOfWork.getSupportRequestRepository().create(request);
 
+            //aggiorno la relazione bidirezionale in memoria
+            team.getSupportRequests().add(request);
+
+            //aggiorno la relazione bidirezionale in memoria
+            hackathon.getSupportRequests().add(request);
+
             // 4. Ritorno DTO
             return mapToDTO(request);
         } else throw new IllegalStateException("Esiste già una richiesta per questo team in questo Hackathon");

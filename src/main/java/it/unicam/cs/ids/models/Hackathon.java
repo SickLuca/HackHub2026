@@ -62,13 +62,23 @@ public class Hackathon {
             joinColumns = @JoinColumn(name = "hackathon_id"),
             inverseJoinColumns = @JoinColumn(name = "mentor_id")
     )
+
     private List<StaffUser> mentors;
+
+
 
     @OneToMany(mappedBy = "subscribedHackathon")
     private List<Team> teams = new ArrayList<>();
 
     @OneToMany(mappedBy = "hackathon", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Submission> submissions = new ArrayList<>();
+
+    @OneToMany(mappedBy = "hackathon", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Report>  reports = new ArrayList<>();
+
+    @OneToMany(mappedBy = "hackathon", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<SupportRequest> supportRequests = new ArrayList<>();
+
     @Transient
     private Team vincitore;
 

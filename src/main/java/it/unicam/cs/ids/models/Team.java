@@ -30,6 +30,12 @@ public class Team {
     private Hackathon subscribedHackathon;
 
     @OneToMany(mappedBy = "team")
-    private List<Submission> submissions = new ArrayList<>();;
+    private List<Submission> submissions = new ArrayList<>();
+
+    @OneToMany(mappedBy = "fromTeam", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Invitation>  invitations = new ArrayList<>();
+
+    @OneToMany(mappedBy = "team", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<SupportRequest> supportRequests = new ArrayList<>();
 
 }
