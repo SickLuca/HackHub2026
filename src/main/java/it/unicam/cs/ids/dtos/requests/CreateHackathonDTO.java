@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public record CreateHackathonDTO(
-         Long organizerId,
+
          String name,
          LocalDateTime startDate,
          LocalDateTime endDate,

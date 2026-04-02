@@ -11,57 +11,56 @@ import it.unicam.cs.ids.models.utils.UserRole;
 import it.unicam.cs.ids.services.abstractions.IInvitationService;
 import it.unicam.cs.ids.utils.unitOfWork.IUnitOfWork;
 import it.unicam.cs.ids.validators.abstractions.Validator;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+@Service
+@Transactional
 public class InvitationService implements IInvitationService {
 
     private final IUnitOfWork unitOfWork;
     private final Validator<CreateInvitationDTO> validator;
 
-    public InvitationService(IUnitOfWork unitOfWork, Validator<CreateInvitationDTO> validator) {
+    public InvitationService(IUnitOfWork unitOfWork,
+                             Validator<CreateInvitationDTO> validator) {
         this.unitOfWork = unitOfWork;
         this.validator = validator;
     }
 
     @Override
-    public InvitationResponseDTO sendInvitation(CreateInvitationDTO request) {
+    public InvitationResponseDTO sendInvitation(CreateInvitationDTO request, Long fromTeamLeaderId) {
         //Validazione sintattica del DTO
         validator.validate(request);
 
-        Team team = unitOfWork.getTeamRepository().getById(request.fromTeamId());
-        if (team == null) {
-            throw new IllegalArgumentException("Team con id " + request.fromTeamId() + " non trovato");
-        }
-
-        DefaultUser inviter = unitOfWork.getDefaultUserRepository().getById(request.fromTeamLeaderId());
-        if (inviter == null) {
-            throw new IllegalArgumentException("Utente invitante con id " + request.fromTeamLeaderId() + " non trovato");
-        }
-
-        DefaultUser invitedUser = unitOfWork.getDefaultUserRepository().getById(request.toUserId());
-        if (invitedUser == null) {
-            throw new IllegalArgumentException("Utente con id " + request.toUserId() + " non trovato");
-        }
-
+        DefaultUser inviter = unitOfWork.getDefaultUserRepository().findById(fromTeamLeaderId).orElse(null);
         // Controllo validità ruolo e appartenenza al team
-        if (inviter.getRole() != UserRole.TEAM_LEADER || !inviter.getTeam().getId().equals(team.getId())) {
-            throw new IllegalStateException("Solo il Team Leader può invitare nuovi membri nel team.");
+        if (inviter.getRole() != UserRole.TEAM_LEADER) {
+            throw new IllegalStateException("Solo un Team Leader può invitare nuovi membri nel team.");
         }
 
-        // Controllo stato dell'utente invitato
-        if (invitedUser.getRole() != UserRole.USER_NO_TEAM) {
-            throw new IllegalStateException("L'utente invitato appartiene già a un team.");
-        }
-
+        Team team = inviter.getTeam();
         // Controllo capienza team in base all'hackathon (se iscritti)
         if (team.getSubscribedHackathon() != null) {
             if (team.getMembers().size() >= team.getSubscribedHackathon().getMaxDimensionOfTeam()) {
                 throw new IllegalStateException("Il team ha già raggiunto la dimensione massima per l'hackathon a cui è iscritto.");
             }
         }
+
+        DefaultUser invitedUser = unitOfWork.getDefaultUserRepository().findById(request.toUserId()).orElse(null);
+        if (invitedUser == null) {
+            throw new IllegalArgumentException("Utente con id " + request.toUserId() + " non trovato");
+        }
+
+
+        // Controllo stato dell'utente invitato
+        if (invitedUser.getRole() != UserRole.USER_NO_TEAM) {
+            throw new IllegalStateException("L'utente invitato appartiene già a un team.");
+        }
+
 
         // Creazione dell'entità
         Invitation invitation = new Invitation();
@@ -71,13 +70,14 @@ public class InvitationService implements IInvitationService {
         invitation.setStatus(InvitationStatus.PENDING);
         invitation.setCreationDate(LocalDateTime.now());
 
-        Invitation savedInvitation = unitOfWork.getInvitationRepository().create(invitation);
+        Invitation savedInvitation = unitOfWork.getInvitationRepository().save(invitation);
 
         //Aggiornamento utente in memoria
         invitedUser.getInvitations().add(savedInvitation);
 
         //Aggiornamento utente sul db (non dovrebbe essere necessario per via di JPA che dopo il setToUser dovrebbe aver aggiornato le relazioni
-        unitOfWork.getDefaultUserRepository().update(invitedUser);
+        unitOfWork.getDefaultUserRepository().save(invitedUser);
+
 
         //aggiorno relazione bidirezionale in memoria
         team.getInvitations().add(savedInvitation);
@@ -85,7 +85,7 @@ public class InvitationService implements IInvitationService {
         return mapToDTO(savedInvitation);
     }
 
-    public List<InvitationResponseDTO> getAllInvitationsByUserId(Long userId){
+    public List<InvitationResponseDTO> getAllInvitationsByCurrentUser(Long userId){
 
         if(userId == null){
             throw new IllegalArgumentException("User id is null");
@@ -93,7 +93,7 @@ public class InvitationService implements IInvitationService {
 
         List<InvitationResponseDTO> invitations = new ArrayList<>();
 
-        unitOfWork.getInvitationRepository().getAll().stream()
+        unitOfWork.getInvitationRepository().findAll().stream()
                 .filter(invitation -> invitation.getToUser().getId().equals(userId))
                 .forEach(invitation -> invitations.add(mapToDTO(invitation)));
 
@@ -102,8 +102,8 @@ public class InvitationService implements IInvitationService {
     }
 
     @Override
-    public InvitationResponseDTO respondToInvitation(RespondInvitationDTO request){
-        Invitation invitation = unitOfWork.getInvitationRepository().getById(request.invitationId());
+    public InvitationResponseDTO respondToInvitation(RespondInvitationDTO request, Long userId){
+        Invitation invitation = unitOfWork.getInvitationRepository().findById(request.invitationId()).orElse(null);
         if (invitation == null) {
             throw new IllegalArgumentException("Invito non trovato.");
         }
@@ -114,8 +114,8 @@ public class InvitationService implements IInvitationService {
         }
 
         // 3. Verifico l'identità dell'utente
-        DefaultUser user = unitOfWork.getDefaultUserRepository().getById(invitation.getToUser().getId());
-        if (user == null || !invitation.getToUser().getId().equals(user.getId())) {
+        DefaultUser user = unitOfWork.getDefaultUserRepository().findById(invitation.getToUser().getId()).orElse(null);
+        if (user == null || !invitation.getToUser().getId().equals(userId)) {
             throw new IllegalArgumentException("L'utente non è il destinatario di questo invito.");
         }
 
@@ -140,13 +140,13 @@ public class InvitationService implements IInvitationService {
             // Sincronizzo la relazione bidirezionale in memoria (il database verrebbe salvato comunque dal merge del team)
             team.getMembers().add(user);
 
-            unitOfWork.getTeamRepository().update(team);
-            unitOfWork.getDefaultUserRepository().update(user);
+            unitOfWork.getTeamRepository().save(team);
+            unitOfWork.getDefaultUserRepository().save(user);
         } else {
             invitation.setStatus(InvitationStatus.REJECTED);
         }
 
-        return mapToDTO(unitOfWork.getInvitationRepository().update(invitation));
+        return mapToDTO(unitOfWork.getInvitationRepository().save(invitation));
     }
 
 

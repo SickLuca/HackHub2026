@@ -6,48 +6,53 @@ import it.unicam.cs.ids.dtos.responses.HackathonResponseDTO;
 import it.unicam.cs.ids.models.Hackathon;
 import it.unicam.cs.ids.models.StaffUser;
 import it.unicam.cs.ids.models.utils.HackathonStatus;
+import it.unicam.cs.ids.models.utils.StaffRole;
 import it.unicam.cs.ids.services.abstractions.IHackathonService;
 import it.unicam.cs.ids.utils.builder.ConcreteHackathonBuilder;
 import it.unicam.cs.ids.utils.unitOfWork.IUnitOfWork;
 import it.unicam.cs.ids.validators.abstractions.Validator;
+import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Service
 public class HackathonService implements IHackathonService {
 
     private final IUnitOfWork unitOfWork;
     private final Validator<CreateHackathonDTO> hackathonValidator;
 
-    public HackathonService(IUnitOfWork unitOfWork, Validator<CreateHackathonDTO> hackathonValidator) {
+    public HackathonService(IUnitOfWork unitOfWork,
+                            Validator<CreateHackathonDTO> hackathonValidator) {
         this.unitOfWork = unitOfWork;
         this.hackathonValidator = hackathonValidator;
     }
 
     @Override
-    public HackathonResponseDTO addHackathon(CreateHackathonDTO request) {
+    public HackathonResponseDTO addHackathon(CreateHackathonDTO request, Long organizerId) {
         hackathonValidator.validate(request);
-
         // 1. Recupero l'Organizzatore.
-        // TODO: In futuro questo ID arriverà dal token di autenticazione di chi fa la richiesta.
-        StaffUser organizer = unitOfWork.getStaffUserRepository().getById(request.organizerId());
+        StaffUser organizer = unitOfWork.getStaffUserRepository().findById(organizerId).orElse(null);
         if (organizer == null) {
             throw new IllegalArgumentException("Organizer not found in the system");
         }
+        if (organizer.getRole() != StaffRole.ORGANIZER) {
+            throw new SecurityException("Only organizers can create hackathons.");
+        }
 
         // 2. Recupero il Giudice dal DB usando l'ID passato nel DTO
-        StaffUser judge = unitOfWork.getStaffUserRepository().getById(request.judgeId());
+        StaffUser judge = unitOfWork.getStaffUserRepository().findById(request.judgeId()).orElse(null);
         if (judge == null) {
             throw new IllegalArgumentException("Judge not found in the system.");
         }
-        
+
         if(request.mentorsIdS().isEmpty()){
             throw new  IllegalArgumentException("At least one mentor is required.");
         }
         // 3. Recupero i Mentori dal DB
         List<StaffUser> mentors = new ArrayList<>();
         for (Long mentorId : request.mentorsIdS()) {
-            StaffUser mentor = unitOfWork.getStaffUserRepository().getById(mentorId);
+            StaffUser mentor = unitOfWork.getStaffUserRepository().findById(mentorId).orElse(null);
             if (mentor == null) {
                 throw new IllegalArgumentException("Mentor with ID " + mentorId + " not found in the system.");
             }
@@ -71,7 +76,7 @@ public class HackathonService implements IHackathonService {
 
                 .build();
 
-        unitOfWork.getHackathonRepository().create(hackathon);
+        unitOfWork.getHackathonRepository().save(hackathon);
 
         return mapToDTO(hackathon);
     }
@@ -93,7 +98,7 @@ public class HackathonService implements IHackathonService {
 
     @Override
     public List<HackathonResponseDTO> getAllHackathons() {
-        List<Hackathon> hackathons = unitOfWork.getHackathonRepository().getAll();
+        List<Hackathon> hackathons = unitOfWork.getHackathonRepository().findAll();
 
         if (hackathons.isEmpty()) return null;
 
@@ -106,9 +111,10 @@ public class HackathonService implements IHackathonService {
     }
 
     @Override
-    public HackathonResponseDTO addMentorToHackathon(AddMentorDTO request) {
+    public HackathonResponseDTO addMentorToHackathon(AddMentorDTO request, Long organizerId) {
+
         // 1. Recupero l'Hackathon
-        Hackathon hackathon = unitOfWork.getHackathonRepository().getById(request.hackathonId());
+        Hackathon hackathon = unitOfWork.getHackathonRepository().findById(request.hackathonId()).orElse(null);
         if (hackathon == null) {
             throw new IllegalArgumentException("Hackathon non trovato");
         }
@@ -118,12 +124,12 @@ public class HackathonService implements IHackathonService {
         }
 
         // 2. Controllo di sicurezza: chi fa la richiesta è davvero l'organizzatore di questo hackathon?
-        if (!hackathon.getOrganizer().getId().equals(request.organizerId())) {
+        if (!hackathon.getOrganizer().getId().equals(organizerId)){
             throw new SecurityException("Solo l'organizzatore può aggiungere mentori a questo hackathon");
         }
 
         // 3. Recupero il Mentore da aggiungere
-        StaffUser mentor = unitOfWork.getStaffUserRepository().getById(request.mentorId());
+        StaffUser mentor = unitOfWork.getStaffUserRepository().findById(request.mentorId()).orElse(null);
         if (mentor == null) {
             throw new IllegalArgumentException("Mentore non trovato nel sistema");
         }
@@ -138,12 +144,11 @@ public class HackathonService implements IHackathonService {
 
         // 5. Aggiunta e salvataggio
         hackathon.getMentors().add(mentor);
-        unitOfWork.getHackathonRepository().update(hackathon);
+        unitOfWork.getHackathonRepository().save(hackathon);
 
         // 6. Ritorno il DTO aggiornato
         return mapToDTO(hackathon);
     }
-
 
     private HackathonResponseDTO mapToDTO(Hackathon h) {
         return new HackathonResponseDTO(

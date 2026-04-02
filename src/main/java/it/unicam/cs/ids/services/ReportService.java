@@ -11,30 +11,49 @@ import it.unicam.cs.ids.models.utils.ReportStatus;
 import it.unicam.cs.ids.services.abstractions.IReportService;
 import it.unicam.cs.ids.utils.unitOfWork.IUnitOfWork;
 import it.unicam.cs.ids.validators.abstractions.Validator;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Service
+@Transactional
 public class ReportService implements IReportService {
 
     private final IUnitOfWork unitOfWork;
     private final Validator<CreateReportDTO> validator;
 
-    public ReportService(IUnitOfWork unitOfWork, Validator<CreateReportDTO> validator) {
+    public ReportService(IUnitOfWork unitOfWork,
+                         Validator<CreateReportDTO> validator) {
+
         this.unitOfWork = unitOfWork;
         this.validator = validator;
     }
 
     @Override
-    public ReportResponseDTO createReport(CreateReportDTO request) {
+    public ReportResponseDTO createReport(CreateReportDTO request, Long mentorId) {
         // 1. Validazione
         validator.validate(request);
 
+        // EXTRAIAMO L'ID DIRETTAMENTE DAL TOKEN JWT!
+
         // 2. Recupero entità (già sicure grazie al validatore)
-        StaffUser mentor = unitOfWork.getStaffUserRepository().getById(request.mentorId());
-        Team team = unitOfWork.getTeamRepository().getById(request.teamId());
-        Hackathon hackathon = unitOfWork.getHackathonRepository().getById(request.hackathonId());
+        StaffUser mentor = unitOfWork.getStaffUserRepository().findById(mentorId).orElse(null);
+        Team team = unitOfWork.getTeamRepository().findById(request.teamId()).orElse(null);
+        Hackathon hackathon = unitOfWork.getHackathonRepository().findById(request.hackathonId()).orElse(null);
+
+        if (hackathon == null) {
+            throw new IllegalArgumentException("Hackathon not found");
+        }
+
+        // Controllo se il mentore è assegnato a questo hackathon
+        boolean isMentorAssigned = hackathon.getMentors().stream()
+                .anyMatch(m -> m.getId().equals(mentorId));
+        if (!isMentorAssigned) {
+            throw new SecurityException("Il mentore non è assegnato a questo hackathon e non può effettuare segnalazioni.");
+        }
 
         // 3. Creazione entità
         Report report = new Report();
@@ -47,10 +66,10 @@ public class ReportService implements IReportService {
         report.setDecisionNote("N/D");
 
         // 4. Salvataggio
-        unitOfWork.getReportRepository().create(report);
+        unitOfWork.getReportRepository().save(report);
 
         //aggiorno la relazione bidirezionale in memoria
-        hackathon.getReports().add(report);
+        hackathon.getReports().add(report); //dovremmo scrivere un add su hackathon?
 
         // 5. Ritorno DTO
         return mapToDTO(report);
@@ -58,7 +77,8 @@ public class ReportService implements IReportService {
 
     @Override
     public List<ReportResponseDTO> getReportsForHackathon(Long hackathonId, Long organizerId) {
-        Hackathon hackathon = unitOfWork.getHackathonRepository().getById(hackathonId);
+
+        Hackathon hackathon = unitOfWork.getHackathonRepository().findById(hackathonId).orElse(null);
         if (hackathon == null) throw new IllegalArgumentException("Hackathon non trovato");
 
         // Solo l'organizzatore dell'hackathon può vedere i report
@@ -66,7 +86,7 @@ public class ReportService implements IReportService {
             throw new SecurityException("Solo l'organizzatore può visualizzare le segnalazioni di questo hackathon.");
         }
 
-        List<Report> reports = unitOfWork.getReportRepository().getReportsByHackathonId(hackathonId);
+        List<Report> reports = unitOfWork.getReportRepository().findByHackathonId(hackathonId);
 
         return reports.stream()
                 .map(this::mapToDTO).
@@ -74,11 +94,12 @@ public class ReportService implements IReportService {
     }
 
     @Override
-    public ReportResponseDTO respondToReport(UpdateReportDTO request) {
-        Report report = unitOfWork.getReportRepository().getById(request.reportId());
+    public ReportResponseDTO respondToReport(UpdateReportDTO request, Long organizerId) {
+
+        Report report = unitOfWork.getReportRepository().findById(request.reportId()).orElse(null);
         if (report == null) throw new IllegalArgumentException("Segnalazione non trovata");
 
-        if (!report.getHackathon().getOrganizer().getId().equals(request.organizerId())) {
+        if (!report.getHackathon().getOrganizer().getId().equals(organizerId)) {
             throw new SecurityException("Solo l'organizzatore può aggiornare lo stato di questa segnalazione.");
         }
 
@@ -92,7 +113,7 @@ public class ReportService implements IReportService {
 
         report.setDecisionNote(request.decisionNote());
         report.setStatus(ReportStatus.RESOLVED);
-        unitOfWork.getReportRepository().update(report);
+        unitOfWork.getReportRepository().save(report);
 
         return mapToDTO(report);
     }

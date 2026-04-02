@@ -5,7 +5,7 @@ import it.unicam.cs.ids.dtos.requests.SubscribeTeamDTO;
 import it.unicam.cs.ids.dtos.responses.TeamResponseDTO;
 
 public interface ITeamService {
-    TeamResponseDTO createTeam(CreateTeamDTO request);
+    TeamResponseDTO createTeam(CreateTeamDTO request, Long creatorId);
 
-    TeamResponseDTO subscribeToHackathon(SubscribeTeamDTO request);
+    TeamResponseDTO subscribeToHackathon(SubscribeTeamDTO request, Long leaderId);
 }

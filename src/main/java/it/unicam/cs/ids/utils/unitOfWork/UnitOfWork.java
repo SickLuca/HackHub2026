@@ -1,7 +1,9 @@
 package it.unicam.cs.ids.utils.unitOfWork;
 
-import it.unicam.cs.ids.repositories.abstractions.*;
+import it.unicam.cs.ids.repositories.*;
+import org.springframework.stereotype.Component;
 
+@Component
 public class UnitOfWork implements IUnitOfWork{
 
     private final IDefaultUserRepository defaultUserRepository;

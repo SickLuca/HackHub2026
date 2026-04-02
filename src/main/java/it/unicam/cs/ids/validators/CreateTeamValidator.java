@@ -2,7 +2,9 @@ package it.unicam.cs.ids.validators;
 
 import it.unicam.cs.ids.dtos.requests.CreateTeamDTO;
 import it.unicam.cs.ids.validators.abstractions.Validator;
+import org.springframework.stereotype.Component;
 
+@Component
 public class CreateTeamValidator implements Validator<CreateTeamDTO> {
 
     @Override

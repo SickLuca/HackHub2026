@@ -2,7 +2,9 @@ package it.unicam.cs.ids.validators;
 
 import it.unicam.cs.ids.dtos.requests.CreateSupportRequestDTO;
 import it.unicam.cs.ids.validators.abstractions.Validator;
+import org.springframework.stereotype.Component;
 
+@Component
 public class CreateSupportRequestValidator implements Validator<CreateSupportRequestDTO> {
     @Override
     public void validate(CreateSupportRequestDTO entity) {
@@ -12,9 +14,7 @@ public class CreateSupportRequestValidator implements Validator<CreateSupportReq
         if (entity.hackathonId() == null || entity.hackathonId() <= 0) {
             throw new IllegalArgumentException("L'ID dell'hackathon non e' valido o e' mancante.");
         }
-        if (entity.teamId() == null || entity.teamId() <= 0) {
-            throw new IllegalArgumentException("L'ID del team non e' valido o e' mancante.");
-        }
+
         if (entity.message().isEmpty()) {
             throw new IllegalArgumentException("Devi inserire un messaggio.");
         }

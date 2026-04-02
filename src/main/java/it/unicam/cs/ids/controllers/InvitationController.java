@@ -3,10 +3,17 @@ package it.unicam.cs.ids.controllers;
 import it.unicam.cs.ids.dtos.requests.CreateInvitationDTO;
 import it.unicam.cs.ids.dtos.responses.InvitationResponseDTO;
 import it.unicam.cs.ids.dtos.requests.RespondInvitationDTO;
+import it.unicam.cs.ids.security.SecurityUtils;
 import it.unicam.cs.ids.services.abstractions.IInvitationService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@RestController // 1. Dice a Spring che questa classe gestisce richieste HTTP e restituisce JSON
+@RequestMapping("/api/invitations")
 public class InvitationController {
 
     private final IInvitationService invitationService;
@@ -15,16 +22,31 @@ public class InvitationController {
         this.invitationService = invitationService;
     }
 
-    public InvitationResponseDTO sendInvitation(CreateInvitationDTO request) {
-        return invitationService.sendInvitation(request);
+    @PostMapping("/send")
+    @PreAuthorize("hasRole('TEAM_LEADER')")
+    public ResponseEntity<InvitationResponseDTO> sendInvitation(@RequestBody CreateInvitationDTO request) {
+        Long fromTeamLeaderId = SecurityUtils.getAuthenticatedUserId();
+
+        InvitationResponseDTO response = invitationService.sendInvitation(request,fromTeamLeaderId);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    public List<InvitationResponseDTO> getAllInvitationsByUserId(Long userId){
-        return invitationService.getAllInvitationsByUserId(userId);
+    @GetMapping("/getAll")
+    @PreAuthorize("hasAnyRole('USER_NO_TEAM', 'TEAM_MEMBER', 'TEAM_LEADER')")
+    public ResponseEntity<List<InvitationResponseDTO>> getMyInvitations(){
+        Long userId = SecurityUtils.getAuthenticatedUserId();
+
+        List<InvitationResponseDTO> response = invitationService.getAllInvitationsByCurrentUser(userId);
+        return ResponseEntity.ok(response);
     }
 
-    public InvitationResponseDTO respondToInvitation(RespondInvitationDTO response) {
-        return invitationService.respondToInvitation(response);
+    @PostMapping("/respond")
+    @PreAuthorize("hasRole('USER_NO_TEAM')")
+    public ResponseEntity<InvitationResponseDTO> respondToInvitation(@RequestBody RespondInvitationDTO response) {
+        Long userId = SecurityUtils.getAuthenticatedUserId();
+
+        InvitationResponseDTO invitationResponse = invitationService.respondToInvitation(response, userId);
+        return new ResponseEntity<>(invitationResponse, HttpStatus.OK);
     }
 
 }

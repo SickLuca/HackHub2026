@@ -1,5 +1,7 @@
 plugins {
     id 'java'
+    id 'org.springframework.boot' version '4.0.1' //Versione corretta?
+    id 'io.spring.dependency-management' version '1.1.7'
 }
 
 group = 'it.unicam.cs.ids'
@@ -10,23 +12,30 @@ repositories {
 }
 
 dependencies {
-    testImplementation platform('org.junit:junit-bom:5.10.0')
-    testImplementation 'org.junit.jupiter:junit-jupiter'
-    testImplementation 'org.mockito:mockito-junit-jupiter:5.5.0'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    // --- Spring Boot Starters ---
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    // Opzionale ma consigliato per la validazione dei DTO (sostituirà il tuo custom Validator)
+    //implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0'
 
-    testCompileOnly 'org.projectlombok:lombok:1.18.42'
-    testAnnotationProcessor 'org.projectlombok:lombok:1.18.42'
+    // --- Database H2 ---
+    runtimeOnly 'com.h2database:h2' // La versione la decide Spring Boot in automatico
 
-    // --- Dipendenze per Lombok ---
-    compileOnly 'org.projectlombok:lombok:1.18.42'
-    annotationProcessor 'org.projectlombok:lombok:1.18.42'
+    // --- Spring Security & JWT ---
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
 
-    // --- Dipendenze per JPA (tramite Hibernate) ---
-    implementation 'org.hibernate.orm:hibernate-core:7.2.4.Final'
+    // --- Lombok ---
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+    testCompileOnly 'org.projectlombok:lombok'
+    testAnnotationProcessor 'org.projectlombok:lombok'
 
-    // --- Dipendenze per il Database H2 ---
-    runtimeOnly 'com.h2database:h2:2.2.224'
+    // --- Testing ---
+    testImplementation 'org.springframework.boot:spring-boot-starter-test' // Include già JUnit e Mockito!
 }
 
 test {

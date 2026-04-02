@@ -1,6 +1,6 @@
 package it.unicam.cs.ids.utils.unitOfWork;
 
-import it.unicam.cs.ids.repositories.abstractions.*;
+import it.unicam.cs.ids.repositories.*;
 
 public interface IUnitOfWork {
 

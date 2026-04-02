@@ -7,9 +7,9 @@ import it.unicam.cs.ids.dtos.responses.ReportResponseDTO;
 import java.util.List;
 
 public interface IReportService {
-    ReportResponseDTO createReport(CreateReportDTO request);
+    ReportResponseDTO createReport(CreateReportDTO request, Long mentorId);
 
     List<ReportResponseDTO> getReportsForHackathon(Long hackathonId, Long organizerId);
 
-    ReportResponseDTO respondToReport(UpdateReportDTO request);
+    ReportResponseDTO respondToReport(UpdateReportDTO request, Long organizerId);
 }

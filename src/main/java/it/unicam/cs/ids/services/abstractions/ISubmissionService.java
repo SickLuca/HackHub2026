@@ -7,10 +7,10 @@ import it.unicam.cs.ids.dtos.requests.UpdateSubmissionDTO;
 import java.util.List;
 
 public interface ISubmissionService {
-    SubmissionResponseDTO addSubmission(CreateSubmissionDTO submission);
+    SubmissionResponseDTO addSubmission(CreateSubmissionDTO submission, Long userId);
 
-    SubmissionResponseDTO updateSubmission(UpdateSubmissionDTO submission);
-    SubmissionResponseDTO evaluateSubmission(EvaluateSubmissionDTO request);
+    SubmissionResponseDTO updateSubmission(UpdateSubmissionDTO submission, Long userId);
+    SubmissionResponseDTO evaluateSubmission(EvaluateSubmissionDTO request, Long judgeId);
 
     List<SubmissionResponseDTO> getSubmissionsByHackathon(Long hackathonId, Long staffId);
     SubmissionResponseDTO getSubmissionDetails(Long submissionId, Long staffId);

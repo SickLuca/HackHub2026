@@ -4,6 +4,7 @@ import it.unicam.cs.ids.dtos.requests.CreateSubmissionDTO;
 import it.unicam.cs.ids.dtos.requests.EvaluateSubmissionDTO;
 import it.unicam.cs.ids.dtos.responses.SubmissionResponseDTO;
 import it.unicam.cs.ids.dtos.requests.UpdateSubmissionDTO;
+import it.unicam.cs.ids.models.DefaultUser;
 import it.unicam.cs.ids.models.Hackathon;
 import it.unicam.cs.ids.models.Submission;
 import it.unicam.cs.ids.models.Team;
@@ -12,11 +13,15 @@ import it.unicam.cs.ids.models.utils.SubmissionStatus;
 import it.unicam.cs.ids.services.abstractions.ISubmissionService;
 import it.unicam.cs.ids.utils.unitOfWork.IUnitOfWork;
 import it.unicam.cs.ids.validators.abstractions.Validator;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+@Service
+@Transactional
 public class SubmissionService implements ISubmissionService {
 
     private final IUnitOfWork unitOfWork;
@@ -24,20 +29,27 @@ public class SubmissionService implements ISubmissionService {
     private final Validator<EvaluateSubmissionDTO> evaluateSubmissionValidator;
 
 
-    public SubmissionService(IUnitOfWork unitOfWork, Validator<CreateSubmissionDTO> submissionValidator, Validator<EvaluateSubmissionDTO> evaluateSubmissionValidator) {
+    public SubmissionService(IUnitOfWork unitOfWork,
+                             Validator<CreateSubmissionDTO> submissionValidator, Validator<EvaluateSubmissionDTO> evaluateSubmissionValidator) {
         this.unitOfWork = unitOfWork;
         this.createSubmissionValidator = submissionValidator;
         this.evaluateSubmissionValidator = evaluateSubmissionValidator;
     }
 
     @Override
-    public SubmissionResponseDTO addSubmission(CreateSubmissionDTO request) {
+    public SubmissionResponseDTO addSubmission(CreateSubmissionDTO request, Long userId) {
         createSubmissionValidator.validate(request);
 
-        Team team = unitOfWork.getTeamRepository().getById(request.teamId());
-        if (team == null) throw new IllegalArgumentException("Team not found.");
+        // 1. Recupero Utente e Team in modo sicuro!
+        DefaultUser user = unitOfWork.getDefaultUserRepository().findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Utente non trovato"));
 
-        Hackathon hackathon = unitOfWork.getHackathonRepository().getById(request.hackathonId());
+        Team team = user.getTeam();
+        if (team == null) {
+            throw new IllegalStateException("Devi appartenere a un team per poter sottomettere un progetto.");
+        }
+
+        Hackathon hackathon = unitOfWork.getHackathonRepository().findById(request.hackathonId()).orElse(null);
         if (hackathon == null) throw new IllegalArgumentException("Hackathon not found.");
 
         // Controllo 1: Il team è iscritto a QUESTO hackathon?
@@ -72,7 +84,7 @@ public class SubmissionService implements ISubmissionService {
 
 
             // 1. Salviamo nel database per generare l'ID
-            Submission savedSubmission = unitOfWork.getSubmissionRepository().create(newSubmission);
+            Submission savedSubmission = unitOfWork.getSubmissionRepository().save(newSubmission);
 
             // 2. SINCRONIZZAZIONE DELLA RELAZIONE BIDIREZIONALE!
             // Aggiorniamo la lista in memoria del Team, altrimenti alla
@@ -90,28 +102,34 @@ public class SubmissionService implements ISubmissionService {
     }
 
     @Override
-    public SubmissionResponseDTO updateSubmission(UpdateSubmissionDTO request) {
-        Submission submission = unitOfWork.getSubmissionRepository().getById(request.submissionId());
+    public SubmissionResponseDTO updateSubmission(UpdateSubmissionDTO request, Long userId) {
+        Submission submission = unitOfWork.getSubmissionRepository().findById(request.submissionId()).orElse(null);
         if (submission == null) {
             throw new IllegalArgumentException("Submission not found.");
         }
         if (submission.getHackathon().getSubmitDeadline().isBefore(LocalDateTime.now())) {
             throw new IllegalStateException("The submission deadline has already passed.");
         }
+
+        DefaultUser user = unitOfWork.getDefaultUserRepository().findById(userId).orElseThrow();
+        if (user.getTeam() == null || !submission.getTeam().getId().equals(user.getTeam().getId())) {
+            throw new SecurityException("Non puoi modificare una sottomissione che non appartiene al tuo team.");
+        }
+
         submission.setProjectUrl(request.projectUrl());
         submission.setDescription(request.description());
         submission.setSubmissionDate(LocalDateTime.now());
-        unitOfWork.getSubmissionRepository().update(submission);
+        unitOfWork.getSubmissionRepository().save(submission);
 
         return mapToDTO(submission);
     }
 
     @Override
-    public SubmissionResponseDTO evaluateSubmission(EvaluateSubmissionDTO request) {
+    public SubmissionResponseDTO evaluateSubmission(EvaluateSubmissionDTO request, Long judgeId) {
         evaluateSubmissionValidator.validate(request);
 
         // 1. Recupero la sottomissione
-        Submission submission = unitOfWork.getSubmissionRepository().getById(request.submissionId());
+        Submission submission = unitOfWork.getSubmissionRepository().findById(request.submissionId()).orElse(null);
         if (submission == null) {
             throw new IllegalArgumentException("Sottomissione non trovata");
         }
@@ -119,7 +137,7 @@ public class SubmissionService implements ISubmissionService {
         Hackathon hackathon = submission.getHackathon();
 
         // 2. Controllo di sicurezza: chi valuta è davvero il giudice di questo Hackathon?
-        if (!hackathon.getJudge().getId().equals(request.judgeId())) {
+        if (!hackathon.getJudge().getId().equals(judgeId)) {
             throw new SecurityException("Non sei il giudice assegnato a questo Hackathon");
         }
 
@@ -136,14 +154,14 @@ public class SubmissionService implements ISubmissionService {
         submission.setScore(request.score());
         submission.setJudgeFeedback(request.feedback());
 
-        unitOfWork.getSubmissionRepository().update(submission);
+        unitOfWork.getSubmissionRepository().save(submission);
 
         return mapToDTO(submission);
     }
 
     @Override
     public List<SubmissionResponseDTO> getSubmissionsByHackathon(Long hackathonId, Long staffId) {
-        Hackathon hackathon = unitOfWork.getHackathonRepository().getById(hackathonId);
+        Hackathon hackathon = unitOfWork.getHackathonRepository().findById(hackathonId).orElse(null);
         if (hackathon == null) {
             throw new IllegalArgumentException("Hackathon non trovato.");
         }
@@ -153,7 +171,7 @@ public class SubmissionService implements ISubmissionService {
             throw new SecurityException("Non sei autorizzato a visualizzare le sottomissioni di questo hackathon.");
         }
 
-        List<Submission> submissions = unitOfWork.getSubmissionRepository().getByHackathon(hackathonId);
+        List<Submission> submissions = unitOfWork.getSubmissionRepository().findByHackathonId(hackathonId);
 
         return submissions.stream()
                 .map(this::mapToDTO)
@@ -162,7 +180,7 @@ public class SubmissionService implements ISubmissionService {
 
     @Override
     public SubmissionResponseDTO getSubmissionDetails(Long submissionId, Long staffId) {
-        Submission submission = unitOfWork.getSubmissionRepository().getById(submissionId);
+        Submission submission = unitOfWork.getSubmissionRepository().findById(submissionId).orElse(null);
         if (submission == null) {
             throw new IllegalArgumentException("Sottomissione non trovata.");
         }

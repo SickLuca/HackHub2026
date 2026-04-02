@@ -6,9 +6,10 @@ import it.unicam.cs.ids.dtos.requests.RespondInvitationDTO;
 
 import java.util.List;
 
+
 public interface IInvitationService {
-    InvitationResponseDTO sendInvitation(CreateInvitationDTO request);
-    List<InvitationResponseDTO> getAllInvitationsByUserId(Long userId);
-    InvitationResponseDTO respondToInvitation(RespondInvitationDTO response);
+    InvitationResponseDTO sendInvitation(CreateInvitationDTO request, Long fromTeamLeaderID);
+    List<InvitationResponseDTO> getAllInvitationsByCurrentUser(Long userId);
+    InvitationResponseDTO respondToInvitation(RespondInvitationDTO response, Long userId);
 
 }

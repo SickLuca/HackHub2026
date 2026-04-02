@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface ISupportRequestService {
 
-    SupportRequestResponseDTO createRequest(CreateSupportRequestDTO requestDTO);
+    SupportRequestResponseDTO createRequest(CreateSupportRequestDTO requestDTO, Long userId);
 
     List<SupportRequestResponseDTO> getRequestsForHackathon(Long hackathonId, Long mentorId);
 }

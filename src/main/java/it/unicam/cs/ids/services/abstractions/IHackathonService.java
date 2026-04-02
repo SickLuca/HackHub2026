@@ -8,11 +8,11 @@ import it.unicam.cs.ids.models.Hackathon;
 import java.util.List;
 
 public interface IHackathonService {
-    HackathonResponseDTO addHackathon(CreateHackathonDTO hackathon);
+    HackathonResponseDTO addHackathon(CreateHackathonDTO hackathon,Long organizerId);
     HackathonResponseDTO updateHackathon(Hackathon hackathon);
     HackathonResponseDTO deleteHackathon(Long id);
     HackathonResponseDTO getHackathonById(Long id);
     List<HackathonResponseDTO> getAllHackathons();
-    HackathonResponseDTO addMentorToHackathon(AddMentorDTO request);
+    HackathonResponseDTO addMentorToHackathon(AddMentorDTO request, Long organizerId);
 }
 

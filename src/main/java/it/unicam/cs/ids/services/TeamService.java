@@ -11,32 +11,35 @@ import it.unicam.cs.ids.models.utils.UserRole;
 import it.unicam.cs.ids.services.abstractions.ITeamService;
 import it.unicam.cs.ids.utils.unitOfWork.IUnitOfWork;
 import it.unicam.cs.ids.validators.abstractions.Validator;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 
+@Service
+@Transactional
 public class TeamService implements ITeamService {
 
     private final IUnitOfWork unitOfWork;
     private final Validator<CreateTeamDTO> teamValidator;
 
-    public TeamService(IUnitOfWork unitOfWork, Validator<CreateTeamDTO> teamValidator) {
+    public TeamService(IUnitOfWork unitOfWork,
+                       Validator<CreateTeamDTO> teamValidator) {
         this.unitOfWork = unitOfWork;
         this.teamValidator = teamValidator;
     }
 
     @Override
-    public TeamResponseDTO createTeam(CreateTeamDTO request) {
+    public TeamResponseDTO createTeam(CreateTeamDTO request, Long creatorId) {
         teamValidator.validate(request); // Se fallisce, lancia l'eccezione ed esce dal metodo
 
-        // 1. Recupero l'utente dal Database
-        DefaultUser creator = unitOfWork.getDefaultUserRepository().getById(request.creatorId());
-        if (creator == null) {
-            throw new IllegalArgumentException("User not found in the system");
-        }
+        // 1. Recupero l'utente in modo sicuro
+        DefaultUser creator = unitOfWork.getDefaultUserRepository().findById(creatorId)
+                .orElseThrow(() -> new IllegalArgumentException("Utente non trovato nel sistema"));
 
-        // 2. Controllo le regole di business: un utente può appartenere a un solo team
-        if (creator.getTeam() != null) {
-            throw new IllegalStateException("User already belongs to a team!");
+        // 2. Controllo regole di business: un utente può appartenere a un solo team
+        if (creator.getTeam() != null || creator.getRole() != UserRole.USER_NO_TEAM) {
+            throw new IllegalStateException("L'utente appartiene già a un team!");
         }
 
         // 3. Creazione dell'entità Team
@@ -45,53 +48,54 @@ public class TeamService implements ITeamService {
         newTeam.setMembers(new ArrayList<>());
         newTeam.getMembers().add(creator);
 
-        unitOfWork.getTeamRepository().create(newTeam);
+        unitOfWork.getTeamRepository().save(newTeam);
 
         creator.setTeam(newTeam);
         creator.setRole(UserRole.TEAM_LEADER);
-        unitOfWork.getDefaultUserRepository().update(creator);
+        unitOfWork.getDefaultUserRepository().save(creator);
 
         return mapToDTO(newTeam);
     }
 
     @Override
-    public TeamResponseDTO subscribeToHackathon(SubscribeTeamDTO request) {
-        Team team = unitOfWork.getTeamRepository().getById(request.teamId());
-        if (team == null) {
-            throw new IllegalArgumentException("Team not found in the system");
+    public TeamResponseDTO subscribeToHackathon(SubscribeTeamDTO request, Long leaderId) {
+        // 1. Recupero l'utente autenticato e verifico il ruolo
+        DefaultUser leader = unitOfWork.getDefaultUserRepository().findById(leaderId)
+                .orElseThrow(() -> new IllegalArgumentException("Utente non trovato"));
+
+        if (leader.getRole() != UserRole.TEAM_LEADER) {
+            throw new SecurityException("Solo il leader può iscrivere il team a un hackathon");
         }
 
-        Hackathon hackathon = unitOfWork.getHackathonRepository().getById(request.hackathonId());
-        if (hackathon == null) {
-            throw new IllegalArgumentException("Hackathon not found in the system");
+        // 2. Deduzione sicura del team
+        Team team = leader.getTeam();
+        if (team == null) {
+            throw new IllegalStateException("Il team non esiste.");
         }
+
+        // 3. Recupero Hackathon
+        Hackathon hackathon = unitOfWork.getHackathonRepository().findById(request.hackathonId())
+                .orElseThrow(() -> new IllegalArgumentException("Hackathon non trovato"));
 
         if (hackathon.getStatus() != HackathonStatus.REGISTRATION) {
-            throw new IllegalStateException("Hackathon is not in registration phase");
+            throw new IllegalStateException("L'Hackathon non è in fase di registrazione");
         }
 
         if (team.getSubscribedHackathon() != null) {
-            throw new IllegalStateException("Team is already subscribed to an Hackathon.");
+            throw new IllegalStateException("Il team è già iscritto a un Hackathon.");
         }
 
         if (team.getMembers().size() > hackathon.getMaxDimensionOfTeam()) {
-            throw new IllegalStateException("Team is too big for the hackathon");
+            throw new IllegalStateException("Il team supera la dimensione massima per questo hackathon");
         }
 
-        DefaultUser user = unitOfWork.getDefaultUserRepository().getById(request.userId());
-        if (user.getRole() != UserRole.TEAM_LEADER) {
-            throw new IllegalStateException("User is not a team leader");
-        }
-
-        //Finite le validazioni, aggiorniamo sul database
+        // 4. Aggiorniamo sul database
         team.setSubscribedHackathon(hackathon);
         hackathon.getTeams().add(team);
 
-        unitOfWork.getTeamRepository().update(team);
-
+        unitOfWork.getTeamRepository().save(team);
 
         return mapToDTO(team);
-
     }
 
     private TeamResponseDTO mapToDTO(Team team) {
