@@ -79,9 +79,8 @@ public class Hackathon {
     @OneToMany(mappedBy = "hackathon", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SupportRequest> supportRequests = new ArrayList<>();
 
-    @Transient
-    private Team vincitore;
-
-
+   @OneToOne
+    @JoinColumn(name = "winner_id")
+    private Team winner;
 
 }

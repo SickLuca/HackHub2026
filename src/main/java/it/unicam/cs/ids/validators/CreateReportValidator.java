@@ -2,7 +2,6 @@ package it.unicam.cs.ids.validators;
 
 import it.unicam.cs.ids.dtos.requests.CreateReportDTO;
 import it.unicam.cs.ids.models.Hackathon;
-import it.unicam.cs.ids.models.StaffUser;
 import it.unicam.cs.ids.models.Team;
 import it.unicam.cs.ids.utils.unitOfWork.IUnitOfWork;
 import it.unicam.cs.ids.validators.abstractions.Validator;
@@ -23,14 +22,14 @@ public class CreateReportValidator implements Validator<CreateReportDTO> {
             throw new IllegalArgumentException("La descrizione della segnalazione non può essere vuota.");
         }
 
-        Hackathon hackathon = unitOfWork.getHackathonRepository().getById(request.hackathonId());
+        Hackathon hackathon = unitOfWork.getHackathonRepository().findById(request.hackathonId()).orElse(null);
         if (hackathon == null) {
             throw new IllegalArgumentException("Hackathon non trovato.");
         }
 
 
 
-        Team team = unitOfWork.getTeamRepository().getById(request.teamId());
+        Team team = unitOfWork.getTeamRepository().findById(request.teamId()).orElse(null);
         if (team == null) {
             throw new IllegalArgumentException("Team non trovato.");
         }

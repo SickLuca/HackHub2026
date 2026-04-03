@@ -2,6 +2,7 @@ package it.unicam.cs.ids.services.abstractions;
 
 import it.unicam.cs.ids.dtos.requests.AddMentorDTO;
 import it.unicam.cs.ids.dtos.requests.CreateHackathonDTO;
+import it.unicam.cs.ids.dtos.requests.ProclaimWinnerDTO;
 import it.unicam.cs.ids.dtos.responses.HackathonResponseDTO;
 import it.unicam.cs.ids.models.Hackathon;
 
@@ -14,5 +15,6 @@ public interface IHackathonService {
     HackathonResponseDTO getHackathonById(Long id);
     List<HackathonResponseDTO> getAllHackathons();
     HackathonResponseDTO addMentorToHackathon(AddMentorDTO request, Long organizerId);
+    HackathonResponseDTO proclaimWinner(ProclaimWinnerDTO request, Long organizerId);
 }
 

@@ -38,4 +38,6 @@ public class Team {
     @OneToMany(mappedBy = "team", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SupportRequest> supportRequests = new ArrayList<>();
 
+    @Column(nullable = false)
+    private Double balance = 0.0;
 }

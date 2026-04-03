@@ -46,4 +46,15 @@ public class HackathonController {
         HackathonResponseDTO response = hackathonService.addMentorToHackathon(request, organizerId);
         return ResponseEntity.ok(response);
     }
+    
+    @PostMapping("/proclaimWinner")
+    @PreAuthorize("hasRole('ORGANIZER')")
+    public ResponseEntity<HackathonResponseDTO> proclaimWinner(@RequestBody ProclaimWinnerDTO request) {
+        // Estraiamo l'ID dell'Organizzatore in modo sicuro dal token JWT
+        Long organizerId = SecurityUtils.getAuthenticatedUserId();
+
+        HackathonResponseDTO response = hackathonService.proclaimWinner(request, organizerId);
+
+        return ResponseEntity.ok(response);
+    }
 }

@@ -6,6 +6,7 @@ public record TeamResponseDTO(
         Long id,
         String name,
         List<String> membersName,
-        String subscribedHackathonName
+        String subscribedHackathonName,
+        Double balance
 ) {
 }

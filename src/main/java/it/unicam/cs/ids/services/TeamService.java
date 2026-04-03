@@ -97,13 +97,30 @@ public class TeamService implements ITeamService {
 
         return mapToDTO(team);
     }
+    
+    @Override
+    public TeamResponseDTO getTeamByCurrentUser(Long userId){
+        DefaultUser user = unitOfWork.getDefaultUserRepository().findById(userId).orElse(null);
+        if(user == null){
+            throw new IllegalArgumentException("Utente non trovato");
+        }
 
+        Team team = user.getTeam();
+
+        if(team == null){
+            throw new IllegalStateException("L'utente non appartiene a nessun team");
+        }
+
+        return mapToDTO(team);
+    }
+    
     private TeamResponseDTO mapToDTO(Team team) {
         return new TeamResponseDTO(
                 team.getId(),
                 team.getName(),
                 team.getMembers().stream().map(m -> m.getName() + " " + m.getSurname()).toList(),
-                team.getSubscribedHackathon() == null ? "Not subscribed to any Hackathon" : team.getSubscribedHackathon().getName()
+                team.getSubscribedHackathon() == null ? "Not subscribed to any Hackathon" : team.getSubscribedHackathon().getName(),
+                team.getBalance()
         );
     }
 

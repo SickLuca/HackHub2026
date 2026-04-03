@@ -141,7 +141,7 @@ public class SubmissionService implements ISubmissionService {
             throw new SecurityException("Non sei il giudice assegnato a questo Hackathon");
         }
 
-        if (hackathon.getStatus() != HackathonStatus.IN_PROGRESS) {
+        if (hackathon.getStatus() != HackathonStatus.UNDER_EVALUATION) {
             throw new IllegalStateException("L'hackathon non è attualmente in fase di valutazione");
         }
 
@@ -153,7 +153,7 @@ public class SubmissionService implements ISubmissionService {
         // 5. Aggiornamento dell'entità
         submission.setScore(request.score());
         submission.setJudgeFeedback(request.feedback());
-
+        submission.setStatus(SubmissionStatus.EVALUATED);
         unitOfWork.getSubmissionRepository().save(submission);
 
         return mapToDTO(submission);

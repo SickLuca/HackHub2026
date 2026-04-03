@@ -19,6 +19,7 @@ public record HackathonResponseDTO(
         HackathonStatus status,
         String organizerName,  // Solo le info essenziali, non l'oggetto StaffUser
         String judgeName,
-        List<String> mentorNames
+        List<String> mentorNames,
+        String winnerTeamName
 ) {
 }

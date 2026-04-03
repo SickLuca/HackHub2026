@@ -8,4 +8,6 @@ public interface ITeamService {
     TeamResponseDTO createTeam(CreateTeamDTO request, Long creatorId);
 
     TeamResponseDTO subscribeToHackathon(SubscribeTeamDTO request, Long leaderId);
+    
+    TeamResponseDTO getTeamByCurrentUser(Long userId);
 }

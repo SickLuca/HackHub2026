@@ -2,17 +2,20 @@ package it.unicam.cs.ids.services;
 
 import it.unicam.cs.ids.dtos.requests.AddMentorDTO;
 import it.unicam.cs.ids.dtos.requests.CreateHackathonDTO;
+import it.unicam.cs.ids.dtos.requests.ProclaimWinnerDTO;
 import it.unicam.cs.ids.dtos.responses.HackathonResponseDTO;
 import it.unicam.cs.ids.models.Hackathon;
 import it.unicam.cs.ids.models.StaffUser;
+import it.unicam.cs.ids.models.Team;
 import it.unicam.cs.ids.models.utils.HackathonStatus;
 import it.unicam.cs.ids.models.utils.StaffRole;
+import it.unicam.cs.ids.models.utils.SubmissionStatus;
 import it.unicam.cs.ids.services.abstractions.IHackathonService;
 import it.unicam.cs.ids.utils.builder.ConcreteHackathonBuilder;
 import it.unicam.cs.ids.utils.unitOfWork.IUnitOfWork;
 import it.unicam.cs.ids.validators.abstractions.Validator;
 import org.springframework.stereotype.Service;
-
+import it.unicam.cs.ids.utils.strategy.PaymentProcessor;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,11 +24,13 @@ public class HackathonService implements IHackathonService {
 
     private final IUnitOfWork unitOfWork;
     private final Validator<CreateHackathonDTO> hackathonValidator;
+    private final PaymentProcessor paymentProcessor;
 
     public HackathonService(IUnitOfWork unitOfWork,
-                            Validator<CreateHackathonDTO> hackathonValidator) {
+                            Validator<CreateHackathonDTO> hackathonValidator, PaymentProcessor paymentProcessor) {
         this.unitOfWork = unitOfWork;
         this.hackathonValidator = hackathonValidator;
+        this.paymentProcessor=paymentProcessor;
     }
 
     @Override
@@ -150,6 +155,50 @@ public class HackathonService implements IHackathonService {
         return mapToDTO(hackathon);
     }
 
+  @Override
+    public HackathonResponseDTO proclaimWinner(ProclaimWinnerDTO request, Long organizerId) {
+        Hackathon hackathon = unitOfWork.getHackathonRepository().findById(request.hackathonId())
+                .orElseThrow(() -> new IllegalArgumentException("Hackathon non trovato"));
+
+        // 1. Controllo di Sicurezza: Solo l'organizzatore di QUESTO hackathon può farlo
+        if (!hackathon.getOrganizer().getId().equals(organizerId)) {
+            throw new SecurityException("Solo l'organizzatore assegnato può proclamare il vincitore.");
+        }
+
+        // 2. Controllo di Stato: L'hackathon deve essere in valutazione
+        if (hackathon.getStatus() != HackathonStatus.UNDER_EVALUATION) {
+            throw new IllegalStateException("Impossibile proclamare un vincitore: l'hackathon non è in fase di valutazione.");
+        }
+
+        boolean allEvaluated = hackathon.getSubmissions().stream()
+                .allMatch(sub -> sub.getStatus() == SubmissionStatus.EVALUATED);
+
+        if (!allEvaluated) {
+            throw new IllegalStateException("Attenzione: non tutte le sottomissioni sono state valutate dal Giudice.");
+        }
+
+        // 4. Recupero del Team Vincitore e controllo validità
+        Team winner = unitOfWork.getTeamRepository().findById(request.winningTeamId())
+                .orElseThrow(() -> new IllegalArgumentException("Team vincitore non trovato"));
+
+        if (!hackathon.getTeams().contains(winner)) {
+            throw new IllegalArgumentException("Il team selezionato non è iscritto a questo Hackathon.");
+        }
+
+        // 5. Proclamazione e Chiusura
+        hackathon.setWinner(winner);
+        hackathon.setStatus(HackathonStatus.FINISHED);
+
+        // 6. Erogazione del premio con strategy pattern
+        if (hackathon.getCashPrize() != null && hackathon.getCashPrize() > 0) {
+            paymentProcessor.processPayment(request.paymentMethod(), winner.getId(), hackathon.getCashPrize());
+        }
+
+        unitOfWork.getHackathonRepository().save(hackathon);
+
+        return mapToDTO(hackathon);
+    }
+
     private HackathonResponseDTO mapToDTO(Hackathon h) {
         return new HackathonResponseDTO(
                 h.getId(),
@@ -165,8 +214,8 @@ public class HackathonService implements IHackathonService {
                 h.getStatus(),
                 h.getOrganizer().getName() + " " + h.getOrganizer().getSurname(),
                 h.getJudge().getName() + " " + h.getJudge().getSurname(),
-                h.getMentors().stream().map(m -> m.getName() + " " + m.getSurname()).toList()
-
+                h.getMentors().stream().map(m -> m.getName() + " " + m.getSurname()).toList(),
+                h.getWinner() == null ? "N/D" : h.getWinner().getName()
         );
     }
 }

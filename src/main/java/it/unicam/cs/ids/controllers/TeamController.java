@@ -8,6 +8,7 @@ import it.unicam.cs.ids.services.abstractions.ITeamService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -39,5 +40,14 @@ public class TeamController {
 
         TeamResponseDTO response = teamService.subscribeToHackathon(request, leaderId);
         return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @GetMapping
+    @PreAuthorize("hasAnyRole('USER_NO_TEAM', 'TEAM_MEMBER', 'TEAM_LEADER')")
+    public ResponseEntity<TeamResponseDTO> getMyTeam() {
+        Long userId = SecurityUtils.getAuthenticatedUserId();
+
+        TeamResponseDTO response = teamService.getTeamByCurrentUser(userId);
+        return ResponseEntity.ok(response);
     }
 }
