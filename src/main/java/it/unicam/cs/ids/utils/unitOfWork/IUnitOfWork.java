@@ -12,6 +12,7 @@ public interface IUnitOfWork {
     IInvitationRepository getInvitationRepository();
     ISupportRequestRepository getSupportRequestRepository();
     IReportRepository getReportRepository();
+    IUserRepository getUserRepository();
     void commit();
     void rollback();
 }

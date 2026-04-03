@@ -19,7 +19,15 @@ public class OpenApiConfig {
                 .info(new Info()
                         .title("HackHub API Documentation")
                         .version("1.0")
-                        .description("API documentation for project: HackHub IDS 2026"));
-
+                        .description("API documentation for project: HackHub IDS 2026"))
+                // Aggiunge il pulsante "Authorize" nella UI
+                .addSecurityItem(new SecurityRequirement().addList("bearerAuth"))
+                .components(new Components()
+                        .addSecuritySchemes("bearerAuth",
+                                new SecurityScheme()
+                                        .name("bearerAuth")
+                                        .type(SecurityScheme.Type.HTTP)
+                                        .scheme("bearer")
+                                        .bearerFormat("JWT")));
     }
 }
