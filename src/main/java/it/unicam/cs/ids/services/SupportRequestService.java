@@ -1,15 +1,13 @@
 package it.unicam.cs.ids.services;
 
 import it.unicam.cs.ids.dtos.requests.CreateSupportRequestDTO;
+import it.unicam.cs.ids.dtos.requests.ScheduleCallDTO;
 import it.unicam.cs.ids.dtos.responses.SupportRequestResponseDTO;
-import it.unicam.cs.ids.models.DefaultUser;
-import it.unicam.cs.ids.models.Hackathon;
-import it.unicam.cs.ids.models.SupportRequest;
-import it.unicam.cs.ids.models.Team;
+import it.unicam.cs.ids.models.*;
 import it.unicam.cs.ids.models.utils.SupportRequestStatus;
+import it.unicam.cs.ids.utils.adapter.ICalendarService;
 import it.unicam.cs.ids.services.abstractions.ISupportRequestService;
 import it.unicam.cs.ids.utils.unitOfWork.IUnitOfWork;
-import it.unicam.cs.ids.validators.abstractions.Validator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,19 +20,15 @@ import java.util.stream.Collectors;
 public class SupportRequestService implements ISupportRequestService {
 
     private final IUnitOfWork unitOfWork;
-    private final Validator<CreateSupportRequestDTO> validator;
+    private final ICalendarService calendarService;
 
-
-    public SupportRequestService(IUnitOfWork unitOfWork,
-                                 Validator<CreateSupportRequestDTO> validator) {
+    public SupportRequestService(IUnitOfWork unitOfWork, ICalendarService calendarService) {
         this.unitOfWork = unitOfWork;
-        this.validator = validator;
+        this.calendarService = calendarService;
     }
 
     @Override
     public SupportRequestResponseDTO createRequest(CreateSupportRequestDTO requestDTO, Long userId) {
-        validator.validate(requestDTO);
-
         // 1. Recupero Utente e Team in modo sicuro dal token
         DefaultUser user = unitOfWork.getDefaultUserRepository().findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("Utente non trovato"));
@@ -104,6 +98,44 @@ public class SupportRequestService implements ISupportRequestService {
                 .collect(Collectors.toList());
     }
 
+
+    @Override
+    public SupportRequestResponseDTO scheduleCall(ScheduleCallDTO request, Long mentorId) {
+        // 1. Recupero la richiesta
+        SupportRequest supportRequest = unitOfWork.getSupportRequestRepository().findById(request.supportRequestId())
+                .orElseThrow(() -> new IllegalArgumentException("Richiesta di supporto non trovata"));
+
+
+        // 2. Recupero il mentore
+        StaffUser mentor = unitOfWork.getStaffUserRepository().findById(mentorId)
+                .orElseThrow(() -> new IllegalArgumentException("Mentore non trovato"));
+
+        // 3. Verifico che la richiesta sia in stato PENDING
+        if (supportRequest.getStatus() != SupportRequestStatus.PENDING) {
+            throw new IllegalStateException("Questa richiesta è già stata gestita o è chiusa.");
+        }
+
+        // 4. Verifico che il mentore sia assegnato all'hackathon di questa richiesta
+        boolean isMentor = supportRequest.getHackathon().getMentors().stream()
+                .anyMatch(m -> m.getId().equals(mentorId));
+
+        if (!isMentor) {
+            throw new SecurityException("Non sei assegnato come mentore a questo Hackathon.");
+        }
+
+        // 5. Deleghiamo al sistema esterno la generazione del link
+        String meetingLink = calendarService.generateMeetingLink(mentor.getName(), supportRequest.getTeam().getName());
+
+        // 6. Aggiorniamo l'entità
+        supportRequest.setStatus(SupportRequestStatus.SCHEDULED);
+        supportRequest.setMeetingLink(meetingLink);
+        supportRequest.setMeetingDate(request.callDate());
+
+        unitOfWork.getSupportRequestRepository().save(supportRequest);
+
+        return mapToDTO(supportRequest);
+    }
+
     private SupportRequestResponseDTO mapToDTO(SupportRequest request) {
         return new SupportRequestResponseDTO(
                 request.getId(),
@@ -111,7 +143,9 @@ public class SupportRequestService implements ISupportRequestService {
                 request.getHackathon().getName(),
                 request.getMessage(),
                 request.getStatus().name(),
-                request.getCreatedAt()
+                request.getCreatedAt(),
+                request.getMeetingLink() == null ? "Not Planned" : request.getMeetingLink(),
+                request.getMeetingDate()
         );
     }
 }

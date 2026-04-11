@@ -27,12 +27,6 @@ public class ConcreteHackathonBuilder implements HackathonBuilder {
     }
 
     @Override
-    public HackathonBuilder withEndDate(LocalDateTime endDate) {
-        hackathon.setEndDate(endDate);
-        return this;
-    }
-
-    @Override
     public HackathonBuilder withRegistrationDeadline(LocalDateTime registrationDeadline) {
         hackathon.setRegistrationDeadline(registrationDeadline);
         return this;

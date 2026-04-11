@@ -5,6 +5,7 @@ import it.unicam.cs.ids.dtos.requests.SubscribeTeamDTO;
 import it.unicam.cs.ids.dtos.responses.TeamResponseDTO;
 import it.unicam.cs.ids.security.SecurityUtils;
 import it.unicam.cs.ids.services.abstractions.ITeamService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -26,7 +27,7 @@ public class TeamController {
 
     @PostMapping("/create")
     @PreAuthorize("hasRole('USER_NO_TEAM')")
-    public ResponseEntity<TeamResponseDTO> createTeam(@RequestBody CreateTeamDTO request) {
+    public ResponseEntity<TeamResponseDTO> createTeam(@Valid @RequestBody CreateTeamDTO request) {
         Long userId = SecurityUtils.getAuthenticatedUserId();
 
         TeamResponseDTO response = teamService.createTeam(request, userId);
@@ -35,7 +36,7 @@ public class TeamController {
 
     @PostMapping("/subscribe")
     @PreAuthorize("hasRole('TEAM_LEADER')")
-    public ResponseEntity<TeamResponseDTO> subscribeToHackathon(@RequestBody SubscribeTeamDTO request) {
+    public ResponseEntity<TeamResponseDTO> subscribeToHackathon(@Valid @RequestBody SubscribeTeamDTO request) {
         Long leaderId = SecurityUtils.getAuthenticatedUserId();
 
         TeamResponseDTO response = teamService.subscribeToHackathon(request, leaderId);
@@ -49,5 +50,15 @@ public class TeamController {
 
         TeamResponseDTO response = teamService.getTeamByCurrentUser(userId);
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/leave")
+    @PreAuthorize("hasAnyRole('TEAM_MEMBER', 'TEAM_LEADER')")
+    public ResponseEntity<String> leaveTeam() {
+        Long userId = SecurityUtils.getAuthenticatedUserId();
+
+        teamService.leaveTeam(userId);
+
+        return ResponseEntity.ok("Hai abbandonato il team con successo.");
     }
 }

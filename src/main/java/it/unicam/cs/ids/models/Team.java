@@ -23,13 +23,13 @@ public class Team {
     private String name;
 
     @OneToMany(mappedBy = "team")
-    private List<DefaultUser> members = new ArrayList<>();;
+    private List<DefaultUser> members = new ArrayList<>();
 
     @ManyToOne
     @JoinColumn(name = "hackathon_id")
     private Hackathon subscribedHackathon;
 
-    @OneToMany(mappedBy = "team")
+    @OneToMany(mappedBy = "team", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Submission> submissions = new ArrayList<>();
 
     @OneToMany(mappedBy = "fromTeam", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -40,4 +40,7 @@ public class Team {
 
     @Column(nullable = false)
     private Double balance = 0.0;
+
+    @OneToMany(mappedBy = "team", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Report> reports = new ArrayList<>();
 }

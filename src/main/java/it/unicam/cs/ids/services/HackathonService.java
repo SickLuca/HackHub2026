@@ -13,29 +13,28 @@ import it.unicam.cs.ids.models.utils.SubmissionStatus;
 import it.unicam.cs.ids.services.abstractions.IHackathonService;
 import it.unicam.cs.ids.utils.builder.ConcreteHackathonBuilder;
 import it.unicam.cs.ids.utils.unitOfWork.IUnitOfWork;
-import it.unicam.cs.ids.validators.abstractions.Validator;
 import org.springframework.stereotype.Service;
 import it.unicam.cs.ids.utils.strategy.PaymentProcessor;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@Transactional
 public class HackathonService implements IHackathonService {
 
     private final IUnitOfWork unitOfWork;
-    private final Validator<CreateHackathonDTO> hackathonValidator;
     private final PaymentProcessor paymentProcessor;
 
     public HackathonService(IUnitOfWork unitOfWork,
-                            Validator<CreateHackathonDTO> hackathonValidator, PaymentProcessor paymentProcessor) {
+                            PaymentProcessor paymentProcessor) {
         this.unitOfWork = unitOfWork;
-        this.hackathonValidator = hackathonValidator;
         this.paymentProcessor=paymentProcessor;
     }
 
     @Override
     public HackathonResponseDTO addHackathon(CreateHackathonDTO request, Long organizerId) {
-        hackathonValidator.validate(request);
         // 1. Recupero l'Organizzatore.
         StaffUser organizer = unitOfWork.getStaffUserRepository().findById(organizerId).orElse(null);
         if (organizer == null) {
@@ -67,7 +66,6 @@ public class HackathonService implements IHackathonService {
         Hackathon hackathon = new ConcreteHackathonBuilder()
                 .withName(request.name())
                 .withStartDate(request.startDate())
-                .withEndDate(request.endDate())
                 .withRegistrationDeadline(request.registrationDeadline())
                 .withSubmitDeadline(request.submitDeadline())
                 .withRegulation(request.regulation())
@@ -204,7 +202,6 @@ public class HackathonService implements IHackathonService {
                 h.getId(),
                 h.getName(),
                 h.getStartDate(),
-                h.getEndDate(),
                 h.getRegistrationDeadline(),
                 h.getSubmitDeadline(),
                 h.getRegulation(),

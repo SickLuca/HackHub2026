@@ -5,12 +5,12 @@ import it.unicam.cs.ids.dtos.requests.SubscribeTeamDTO;
 import it.unicam.cs.ids.dtos.responses.TeamResponseDTO;
 import it.unicam.cs.ids.models.DefaultUser;
 import it.unicam.cs.ids.models.Hackathon;
+import it.unicam.cs.ids.models.Report;
 import it.unicam.cs.ids.models.Team;
 import it.unicam.cs.ids.models.utils.HackathonStatus;
 import it.unicam.cs.ids.models.utils.UserRole;
 import it.unicam.cs.ids.services.abstractions.ITeamService;
 import it.unicam.cs.ids.utils.unitOfWork.IUnitOfWork;
-import it.unicam.cs.ids.validators.abstractions.Validator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,18 +21,13 @@ import java.util.ArrayList;
 public class TeamService implements ITeamService {
 
     private final IUnitOfWork unitOfWork;
-    private final Validator<CreateTeamDTO> teamValidator;
 
-    public TeamService(IUnitOfWork unitOfWork,
-                       Validator<CreateTeamDTO> teamValidator) {
+    public TeamService(IUnitOfWork unitOfWork) {
         this.unitOfWork = unitOfWork;
-        this.teamValidator = teamValidator;
     }
 
     @Override
     public TeamResponseDTO createTeam(CreateTeamDTO request, Long creatorId) {
-        teamValidator.validate(request); // Se fallisce, lancia l'eccezione ed esce dal metodo
-
         // 1. Recupero l'utente in modo sicuro
         DefaultUser creator = unitOfWork.getDefaultUserRepository().findById(creatorId)
                 .orElseThrow(() -> new IllegalArgumentException("Utente non trovato nel sistema"));
@@ -113,6 +108,47 @@ public class TeamService implements ITeamService {
 
         return mapToDTO(team);
     }
+
+    @Override
+    public void leaveTeam(Long userId) {
+        // 1. Recupero l'utente
+        DefaultUser user = unitOfWork.getDefaultUserRepository().findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Utente non trovato"));
+
+        Team team = user.getTeam();
+        if (team == null) {
+            throw new IllegalStateException("Non appartieni a nessun team.");
+        }
+
+        // Salviamo il ruolo prima di modificarlo
+        boolean wasLeader = user.getRole() == UserRole.TEAM_LEADER;
+
+        // 2. Scollego l'utente dal team (aggiorno memoria ed entità)
+        team.getMembers().remove(user);
+        user.setTeam(null);
+        user.setRole(UserRole.USER_NO_TEAM);
+
+        // 3. Gestisco il destino del team
+        if (team.getMembers().isEmpty()) {
+            // Il team è vuoto: scolleghiamo l'hackathon (se presente) e lo eliminiamo
+            if (team.getSubscribedHackathon() != null) {
+                team.getSubscribedHackathon().getTeams().remove(team);
+            }
+            unitOfWork.getTeamRepository().delete(team);
+
+        } else {
+            // Il team ha ancora membri: se è uscito il leader, promuovo il primo della lista
+            if (wasLeader) {
+                DefaultUser newLeader = team.getMembers().getFirst();
+                newLeader.setRole(UserRole.TEAM_LEADER);
+                unitOfWork.getDefaultUserRepository().save(newLeader);
+            }
+            unitOfWork.getTeamRepository().save(team);
+        }
+
+        // 4. Salvo l'utente aggiornato
+        unitOfWork.getDefaultUserRepository().save(user);
+    }
     
     private TeamResponseDTO mapToDTO(Team team) {
         return new TeamResponseDTO(
@@ -120,7 +156,9 @@ public class TeamService implements ITeamService {
                 team.getName(),
                 team.getMembers().stream().map(m -> m.getName() + " " + m.getSurname()).toList(),
                 team.getSubscribedHackathon() == null ? "Not subscribed to any Hackathon" : team.getSubscribedHackathon().getName(),
-                team.getBalance()
+                team.getBalance(),
+                //team.getInvitations().stream().map(i -> i.getDescription()).toList()
+                team.getReports().stream().map(Report::getDescription).toList()
         );
     }
 

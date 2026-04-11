@@ -27,8 +27,6 @@ public class Hackathon {
 
     private LocalDateTime startDate;
 
-    private LocalDateTime endDate;
-
     private LocalDateTime registrationDeadline;
 
     private LocalDateTime submitDeadline;

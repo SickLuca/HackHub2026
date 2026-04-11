@@ -9,7 +9,6 @@ public record HackathonResponseDTO(
         Long id,
         String name,
         LocalDateTime startDate,
-        LocalDateTime endDate,
         LocalDateTime registrationDeadline,
         LocalDateTime submitDeadline,
         String regulation,

@@ -2,9 +2,11 @@ package it.unicam.cs.ids.controllers;
 
 import it.unicam.cs.ids.dtos.requests.AddMentorDTO;
 import it.unicam.cs.ids.dtos.requests.CreateHackathonDTO;
+import it.unicam.cs.ids.dtos.requests.ProclaimWinnerDTO;
 import it.unicam.cs.ids.dtos.responses.HackathonResponseDTO;
 import it.unicam.cs.ids.security.SecurityUtils;
 import it.unicam.cs.ids.services.abstractions.IHackathonService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -24,13 +26,12 @@ public class HackathonController {
 
     @PostMapping("/create")
     @PreAuthorize("hasRole('ORGANIZER')")
-    public ResponseEntity<HackathonResponseDTO> createHackathon(@RequestBody CreateHackathonDTO request) {
+    public ResponseEntity<HackathonResponseDTO> createHackathon(@Valid @RequestBody CreateHackathonDTO request) {
         Long organizerId = SecurityUtils.getAuthenticatedUserId();
         HackathonResponseDTO response = hackathonService.addHackathon(request,organizerId);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    // 4. Mappa una richiesta HTTP GET (usata per leggere dati)
     @GetMapping("/getAll")
     public ResponseEntity<List<HackathonResponseDTO>> getAllHackathons() {
         List<HackathonResponseDTO> response = hackathonService.getAllHackathons();
@@ -38,10 +39,9 @@ public class HackathonController {
         return ResponseEntity.ok(response);
     }
 
-    // 5. Mappa una richiesta POST su un percorso specifico (/api/hackathons/mentors)
     @PostMapping("/addMentors")
     @PreAuthorize("hasRole('ORGANIZER')")
-    public ResponseEntity<HackathonResponseDTO> addMentorToHackathon(@RequestBody AddMentorDTO request) {
+    public ResponseEntity<HackathonResponseDTO> addMentorToHackathon(@Valid @RequestBody AddMentorDTO request) {
         Long organizerId = SecurityUtils.getAuthenticatedUserId();
         HackathonResponseDTO response = hackathonService.addMentorToHackathon(request, organizerId);
         return ResponseEntity.ok(response);
@@ -49,8 +49,7 @@ public class HackathonController {
     
     @PostMapping("/proclaimWinner")
     @PreAuthorize("hasRole('ORGANIZER')")
-    public ResponseEntity<HackathonResponseDTO> proclaimWinner(@RequestBody ProclaimWinnerDTO request) {
-        // Estraiamo l'ID dell'Organizzatore in modo sicuro dal token JWT
+    public ResponseEntity<HackathonResponseDTO> proclaimWinner(@Valid @RequestBody ProclaimWinnerDTO request) {
         Long organizerId = SecurityUtils.getAuthenticatedUserId();
 
         HackathonResponseDTO response = hackathonService.proclaimWinner(request, organizerId);

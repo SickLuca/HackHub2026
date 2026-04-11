@@ -8,7 +8,6 @@ import it.unicam.cs.ids.models.utils.UserRole;
 import it.unicam.cs.ids.security.CustomUserDetails;
 import it.unicam.cs.ids.security.JwtService;
 import it.unicam.cs.ids.utils.unitOfWork.IUnitOfWork;
-import it.unicam.cs.ids.validators.abstractions.Validator;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -20,20 +19,16 @@ public class AuthenticationService {
     private final IUnitOfWork unitOfWork;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
-    private final Validator<RegisterRequestDTO> validator;
     private final AuthenticationManager authenticationManager;
 
-    public AuthenticationService(IUnitOfWork unitOfWork, PasswordEncoder passwordEncoder, JwtService jwtService, Validator<RegisterRequestDTO> registerValidator, AuthenticationManager authenticationManager) {
+    public AuthenticationService(IUnitOfWork unitOfWork, PasswordEncoder passwordEncoder, JwtService jwtService, AuthenticationManager authenticationManager) {
         this.unitOfWork = unitOfWork;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
-        this.validator = registerValidator;
         this.authenticationManager = authenticationManager;
     }
 
     public AuthResponseDTO register(RegisterRequestDTO request) {
-
-        validator.validate(request);
 
         boolean exists = unitOfWork.getUserRepository().findByEmail(request.email()).isPresent();
         if (exists) {

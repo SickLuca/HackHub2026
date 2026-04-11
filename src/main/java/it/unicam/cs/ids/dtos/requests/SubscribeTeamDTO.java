@@ -1,7 +1,11 @@
 package it.unicam.cs.ids.dtos.requests;
 
-public record SubscribeTeamDTO(
-        Long hackathonId
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 
+public record SubscribeTeamDTO(
+        @NotNull(message = "Devi scegliere un hackathon")
+        @Positive(message = "L'id del hackathon deve essere positivo")
+        Long hackathonId
 ) {
 }

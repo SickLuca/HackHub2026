@@ -44,7 +44,6 @@ public class DatabaseSeeder implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) throws Exception {
-        // Controllo: se c'è già uno staff, presumiamo che il DB sia già popolato
         if (staffRepo.count() > 0) {
             System.out.println("Database già popolato. Skip del seeding.");
             return;
@@ -71,7 +70,6 @@ public class DatabaseSeeder implements CommandLineRunner {
         Hackathon hackathon = new ConcreteHackathonBuilder()
                 .withName("Spring Boot Challenge 2026")
                 .withStartDate(LocalDateTime.now().minusDays(2))
-                .withEndDate(LocalDateTime.now().plusDays(5))
                 .withRegistrationDeadline(LocalDateTime.now().minusDays(1))
                 .withSubmitDeadline(LocalDateTime.now().plusDays(4))
                 .withRegulation("Vietato copiare codice generato senza capirlo!")

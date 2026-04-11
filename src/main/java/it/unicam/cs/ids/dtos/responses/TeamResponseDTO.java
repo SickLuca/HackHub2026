@@ -7,6 +7,7 @@ public record TeamResponseDTO(
         String name,
         List<String> membersName,
         String subscribedHackathonName,
-        Double balance
+        Double balance,
+        List<String> reports
 ) {
 }

@@ -10,4 +10,6 @@ public interface ITeamService {
     TeamResponseDTO subscribeToHackathon(SubscribeTeamDTO request, Long leaderId);
     
     TeamResponseDTO getTeamByCurrentUser(Long userId);
+
+    void leaveTeam(Long userId);
 }

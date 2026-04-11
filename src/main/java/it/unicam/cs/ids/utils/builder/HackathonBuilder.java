@@ -10,7 +10,6 @@ public interface HackathonBuilder {
 
     HackathonBuilder withName(String name);
     HackathonBuilder withStartDate(LocalDateTime startDate);
-    HackathonBuilder withEndDate(LocalDateTime endDate);
     HackathonBuilder withRegistrationDeadline(LocalDateTime registrationDeadline);
     HackathonBuilder withSubmitDeadline(LocalDateTime submitDeadline);
     HackathonBuilder withRegulation(String regulation);

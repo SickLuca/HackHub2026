@@ -10,7 +10,6 @@ import it.unicam.cs.ids.models.utils.InvitationStatus;
 import it.unicam.cs.ids.models.utils.UserRole;
 import it.unicam.cs.ids.services.abstractions.IInvitationService;
 import it.unicam.cs.ids.utils.unitOfWork.IUnitOfWork;
-import it.unicam.cs.ids.validators.abstractions.Validator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,18 +22,13 @@ import java.util.List;
 public class InvitationService implements IInvitationService {
 
     private final IUnitOfWork unitOfWork;
-    private final Validator<CreateInvitationDTO> validator;
 
-    public InvitationService(IUnitOfWork unitOfWork,
-                             Validator<CreateInvitationDTO> validator) {
+    public InvitationService(IUnitOfWork unitOfWork) {
         this.unitOfWork = unitOfWork;
-        this.validator = validator;
     }
 
     @Override
     public InvitationResponseDTO sendInvitation(CreateInvitationDTO request, Long fromTeamLeaderId) {
-        //Validazione sintattica del DTO
-        validator.validate(request);
 
         DefaultUser inviter = unitOfWork.getDefaultUserRepository().findById(fromTeamLeaderId).orElse(null);
         // Controllo validità ruolo e appartenenza al team

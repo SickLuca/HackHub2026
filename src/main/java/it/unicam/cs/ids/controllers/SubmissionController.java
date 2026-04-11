@@ -6,15 +6,20 @@ import it.unicam.cs.ids.dtos.responses.SubmissionResponseDTO;
 import it.unicam.cs.ids.dtos.requests.UpdateSubmissionDTO;
 import it.unicam.cs.ids.security.SecurityUtils;
 import it.unicam.cs.ids.services.abstractions.ISubmissionService;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/submissions")
+@Validated
 public class SubmissionController {
 
     private final ISubmissionService submissionService;
@@ -27,7 +32,7 @@ public class SubmissionController {
     // Metodo per il Membro del Team per inviare il progetto la prima volta
     @PostMapping("/submit")
     @PreAuthorize("hasAnyRole('TEAM_LEADER', 'TEAM_MEMBER')")
-    public ResponseEntity<SubmissionResponseDTO> submitProject(@RequestBody CreateSubmissionDTO request) {
+    public ResponseEntity<SubmissionResponseDTO> submitProject(@Valid @RequestBody CreateSubmissionDTO request) {
         Long userId = SecurityUtils.getAuthenticatedUserId();
 
         SubmissionResponseDTO response = submissionService.addSubmission(request, userId);
@@ -38,7 +43,7 @@ public class SubmissionController {
     //Metodo per il Membro del Team per aggiornare il progetto prima della scadenza
     @PostMapping("/update")
     @PreAuthorize("hasAnyRole('TEAM_LEADER', 'TEAM_MEMBER')")
-    public ResponseEntity<SubmissionResponseDTO> updateSubmission(@RequestBody UpdateSubmissionDTO request) {
+    public ResponseEntity<SubmissionResponseDTO> updateSubmission(@Valid @RequestBody UpdateSubmissionDTO request) {
         Long userId = SecurityUtils.getAuthenticatedUserId();
 
         SubmissionResponseDTO response = submissionService.updateSubmission(request, userId);
@@ -48,7 +53,7 @@ public class SubmissionController {
     //Metodo per il Giudice per valutare una sottomissione
     @PostMapping("/evaluate")
     @PreAuthorize("hasRole('JUDGE')")
-    public ResponseEntity<SubmissionResponseDTO> evaluateSubmission(@RequestBody EvaluateSubmissionDTO request) {
+    public ResponseEntity<SubmissionResponseDTO> evaluateSubmission(@Valid @RequestBody EvaluateSubmissionDTO request) {
         Long judgeId = SecurityUtils.getAuthenticatedUserId();
 
         SubmissionResponseDTO response = submissionService.evaluateSubmission(request, judgeId);
@@ -57,7 +62,10 @@ public class SubmissionController {
 
     @GetMapping("/getSubmissionDetail")
     @PreAuthorize("hasAnyRole('ORGANIZER', 'JUDGE', 'MENTOR')")
-    public ResponseEntity<SubmissionResponseDTO> getSubmissionDetails(@RequestParam Long submissionId) {
+    public ResponseEntity<SubmissionResponseDTO> getSubmissionDetails(@RequestParam
+                                                                          @NotNull(message = "L'id deve essere maggiore di 0")
+                                                                          @Positive(message = "L'id deve essere un numero positivo")
+                                                                          Long submissionId) {
         Long staffId = SecurityUtils.getAuthenticatedUserId();
 
         SubmissionResponseDTO response = submissionService.getSubmissionDetails(submissionId, staffId);
@@ -66,7 +74,10 @@ public class SubmissionController {
 
     @GetMapping("/getAllByHackathon")
     @PreAuthorize("hasAnyRole('ORGANIZER', 'JUDGE', 'MENTOR')")
-    public ResponseEntity<List<SubmissionResponseDTO>> getSubmissionsByHackathon(@RequestParam Long hackathonId) {
+    public ResponseEntity<List<SubmissionResponseDTO>> getSubmissionsByHackathon(@RequestParam
+                                                                                     @NotNull(message = "L'id deve essere maggiore di 0")
+                                                                                     @Positive(message = "L'id deve essere un numero positivo")
+                                                                                     Long hackathonId) {
         Long staffId = SecurityUtils.getAuthenticatedUserId();
 
         List<SubmissionResponseDTO> response = submissionService.getSubmissionsByHackathon(hackathonId, staffId);

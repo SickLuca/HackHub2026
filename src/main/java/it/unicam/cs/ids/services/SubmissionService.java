@@ -12,7 +12,6 @@ import it.unicam.cs.ids.models.utils.HackathonStatus;
 import it.unicam.cs.ids.models.utils.SubmissionStatus;
 import it.unicam.cs.ids.services.abstractions.ISubmissionService;
 import it.unicam.cs.ids.utils.unitOfWork.IUnitOfWork;
-import it.unicam.cs.ids.validators.abstractions.Validator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,21 +24,14 @@ import java.util.Optional;
 public class SubmissionService implements ISubmissionService {
 
     private final IUnitOfWork unitOfWork;
-    private final Validator<CreateSubmissionDTO> createSubmissionValidator;
-    private final Validator<EvaluateSubmissionDTO> evaluateSubmissionValidator;
 
 
-    public SubmissionService(IUnitOfWork unitOfWork,
-                             Validator<CreateSubmissionDTO> submissionValidator, Validator<EvaluateSubmissionDTO> evaluateSubmissionValidator) {
+    public SubmissionService(IUnitOfWork unitOfWork) {
         this.unitOfWork = unitOfWork;
-        this.createSubmissionValidator = submissionValidator;
-        this.evaluateSubmissionValidator = evaluateSubmissionValidator;
     }
 
     @Override
     public SubmissionResponseDTO addSubmission(CreateSubmissionDTO request, Long userId) {
-        createSubmissionValidator.validate(request);
-
         // 1. Recupero Utente e Team in modo sicuro!
         DefaultUser user = unitOfWork.getDefaultUserRepository().findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("Utente non trovato"));
@@ -126,8 +118,6 @@ public class SubmissionService implements ISubmissionService {
 
     @Override
     public SubmissionResponseDTO evaluateSubmission(EvaluateSubmissionDTO request, Long judgeId) {
-        evaluateSubmissionValidator.validate(request);
-
         // 1. Recupero la sottomissione
         Submission submission = unitOfWork.getSubmissionRepository().findById(request.submissionId()).orElse(null);
         if (submission == null) {

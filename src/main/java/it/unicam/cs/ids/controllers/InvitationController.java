@@ -5,6 +5,7 @@ import it.unicam.cs.ids.dtos.responses.InvitationResponseDTO;
 import it.unicam.cs.ids.dtos.requests.RespondInvitationDTO;
 import it.unicam.cs.ids.security.SecurityUtils;
 import it.unicam.cs.ids.services.abstractions.IInvitationService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -24,7 +25,7 @@ public class InvitationController {
 
     @PostMapping("/send")
     @PreAuthorize("hasRole('TEAM_LEADER')")
-    public ResponseEntity<InvitationResponseDTO> sendInvitation(@RequestBody CreateInvitationDTO request) {
+    public ResponseEntity<InvitationResponseDTO> sendInvitation(@Valid @RequestBody CreateInvitationDTO request) {
         Long fromTeamLeaderId = SecurityUtils.getAuthenticatedUserId();
 
         InvitationResponseDTO response = invitationService.sendInvitation(request,fromTeamLeaderId);
@@ -42,7 +43,7 @@ public class InvitationController {
 
     @PostMapping("/respond")
     @PreAuthorize("hasRole('USER_NO_TEAM')")
-    public ResponseEntity<InvitationResponseDTO> respondToInvitation(@RequestBody RespondInvitationDTO response) {
+    public ResponseEntity<InvitationResponseDTO> respondToInvitation(@Valid @RequestBody RespondInvitationDTO response) {
         Long userId = SecurityUtils.getAuthenticatedUserId();
 
         InvitationResponseDTO invitationResponse = invitationService.respondToInvitation(response, userId);

@@ -10,7 +10,6 @@ import it.unicam.cs.ids.models.Team;
 import it.unicam.cs.ids.models.utils.ReportStatus;
 import it.unicam.cs.ids.services.abstractions.IReportService;
 import it.unicam.cs.ids.utils.unitOfWork.IUnitOfWork;
-import it.unicam.cs.ids.validators.abstractions.Validator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,19 +22,14 @@ import java.util.stream.Collectors;
 public class ReportService implements IReportService {
 
     private final IUnitOfWork unitOfWork;
-    private final Validator<CreateReportDTO> validator;
 
-    public ReportService(IUnitOfWork unitOfWork,
-                         Validator<CreateReportDTO> validator) {
+    public ReportService(IUnitOfWork unitOfWork) {
 
         this.unitOfWork = unitOfWork;
-        this.validator = validator;
     }
 
     @Override
     public ReportResponseDTO createReport(CreateReportDTO request, Long mentorId) {
-        // 1. Validazione
-        validator.validate(request);
 
         // EXTRAIAMO L'ID DIRETTAMENTE DAL TOKEN JWT!
 

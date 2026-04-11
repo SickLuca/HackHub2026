@@ -8,6 +8,8 @@ public record SupportRequestResponseDTO(
         String hackathonName,
         String message,
         String status,
-        LocalDateTime createdAt
+        LocalDateTime createdAt,
+        String meetingLink,
+        LocalDateTime meetingDate
 ) {
 }

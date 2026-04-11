@@ -18,6 +18,8 @@ dependencies {
     // Opzionale ma consigliato per la validazione dei DTO (sostituirà il tuo custom Validator)
     //implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0'
+    //Validazioni semantiche
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
 
     // --- Database H2 ---
     runtimeOnly 'com.h2database:h2' // La versione la decide Spring Boot in automatico

@@ -37,6 +37,12 @@ public class SupportRequest {
     @Column(nullable = false)
     private SupportRequestStatus status = SupportRequestStatus.PENDING;
 
+    @Column(length = 500)
+    private String meetingLink;
+
+    private LocalDateTime meetingDate;
+
+    //TODO: scadenza inviti?
     @Column(nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 }
