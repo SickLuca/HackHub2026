@@ -3,6 +3,7 @@ package it.unicam.cs.ids.services;
 import it.unicam.cs.ids.dtos.requests.CreateReportDTO;
 import it.unicam.cs.ids.dtos.requests.UpdateReportDTO;
 import it.unicam.cs.ids.dtos.responses.ReportResponseDTO;
+import it.unicam.cs.ids.exceptions.UnauthorizedActionException;
 import it.unicam.cs.ids.models.Hackathon;
 import it.unicam.cs.ids.models.Report;
 import it.unicam.cs.ids.models.StaffUser;
@@ -46,7 +47,7 @@ public class ReportService implements IReportService {
         boolean isMentorAssigned = hackathon.getMentors().stream()
                 .anyMatch(m -> m.getId().equals(mentorId));
         if (!isMentorAssigned) {
-            throw new SecurityException("Il mentore non è assegnato a questo hackathon e non può effettuare segnalazioni.");
+            throw new UnauthorizedActionException("Il mentore non è assegnato a questo hackathon e non può effettuare segnalazioni.");
         }
 
         // 3. Creazione entità
@@ -77,7 +78,7 @@ public class ReportService implements IReportService {
 
         // Solo l'organizzatore dell'hackathon può vedere i report
         if (!hackathon.getOrganizer().getId().equals(organizerId)) {
-            throw new SecurityException("Solo l'organizzatore può visualizzare le segnalazioni di questo hackathon.");
+            throw new UnauthorizedActionException("Solo l'organizzatore può visualizzare le segnalazioni di questo hackathon.");
         }
 
         List<Report> reports = unitOfWork.getReportRepository().findByHackathonId(hackathonId);
@@ -94,7 +95,7 @@ public class ReportService implements IReportService {
         if (report == null) throw new IllegalArgumentException("Segnalazione non trovata");
 
         if (!report.getHackathon().getOrganizer().getId().equals(organizerId)) {
-            throw new SecurityException("Solo l'organizzatore può aggiornare lo stato di questa segnalazione.");
+            throw new UnauthorizedActionException("Solo l'organizzatore può aggiornare lo stato di questa segnalazione.");
         }
 
         if (request.decisionNote() == null || request.decisionNote().isEmpty()) {

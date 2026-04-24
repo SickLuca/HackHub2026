@@ -36,7 +36,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // Rotte pubbliche (Visitatore)
                         .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/hackathons/getAll").permitAll()
+                        .requestMatchers("/api/hackathon/getPublicInfo").permitAll()
 
                         // Rotte per Swagger e H2 Console (utili in sviluppo)
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()

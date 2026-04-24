@@ -3,6 +3,7 @@ package it.unicam.cs.ids.controllers;
 import it.unicam.cs.ids.dtos.requests.AddMentorDTO;
 import it.unicam.cs.ids.dtos.requests.CreateHackathonDTO;
 import it.unicam.cs.ids.dtos.requests.ProclaimWinnerDTO;
+import it.unicam.cs.ids.dtos.responses.HackathonPublicResponseDTO;
 import it.unicam.cs.ids.dtos.responses.HackathonResponseDTO;
 import it.unicam.cs.ids.security.SecurityUtils;
 import it.unicam.cs.ids.services.abstractions.IHackathonService;
@@ -33,6 +34,7 @@ public class HackathonController {
     }
 
     @GetMapping("/getAll")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<HackathonResponseDTO>> getAllHackathons() {
         List<HackathonResponseDTO> response = hackathonService.getAllHackathons();
         // Restituisce la lista con il codice HTTP 200 (OK)
@@ -56,4 +58,11 @@ public class HackathonController {
 
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/getPublicInfo")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<HackathonPublicResponseDTO>> getPublicHackathons() {
+        return ResponseEntity.ok(hackathonService.getHackathonsPublicInfo());
+    }
+
 }

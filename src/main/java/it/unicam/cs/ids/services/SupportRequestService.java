@@ -3,6 +3,7 @@ package it.unicam.cs.ids.services;
 import it.unicam.cs.ids.dtos.requests.CreateSupportRequestDTO;
 import it.unicam.cs.ids.dtos.requests.ScheduleCallDTO;
 import it.unicam.cs.ids.dtos.responses.SupportRequestResponseDTO;
+import it.unicam.cs.ids.exceptions.UnauthorizedActionException;
 import it.unicam.cs.ids.models.*;
 import it.unicam.cs.ids.models.utils.SupportRequestStatus;
 import it.unicam.cs.ids.utils.adapter.ICalendarService;
@@ -86,7 +87,7 @@ public class SupportRequestService implements ISupportRequestService {
                 .anyMatch(mentor -> mentor.getId().equals(mentorId));
 
         if (!isMentor) {
-            throw new SecurityException("Non sei assegnato come mentore a questo Hackathon");
+            throw new UnauthorizedActionException("Non sei assegnato come mentore a questo Hackathon");
         }
 
         // 2. Recuperiamo le richieste
@@ -120,7 +121,7 @@ public class SupportRequestService implements ISupportRequestService {
                 .anyMatch(m -> m.getId().equals(mentorId));
 
         if (!isMentor) {
-            throw new SecurityException("Non sei assegnato come mentore a questo Hackathon.");
+            throw new UnauthorizedActionException("Non sei assegnato come mentore a questo Hackathon.");
         }
 
         // 5. Deleghiamo al sistema esterno la generazione del link

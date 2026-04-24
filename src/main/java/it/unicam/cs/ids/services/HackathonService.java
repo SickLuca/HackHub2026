@@ -3,7 +3,9 @@ package it.unicam.cs.ids.services;
 import it.unicam.cs.ids.dtos.requests.AddMentorDTO;
 import it.unicam.cs.ids.dtos.requests.CreateHackathonDTO;
 import it.unicam.cs.ids.dtos.requests.ProclaimWinnerDTO;
+import it.unicam.cs.ids.dtos.responses.HackathonPublicResponseDTO;
 import it.unicam.cs.ids.dtos.responses.HackathonResponseDTO;
+import it.unicam.cs.ids.exceptions.UnauthorizedActionException;
 import it.unicam.cs.ids.models.Hackathon;
 import it.unicam.cs.ids.models.StaffUser;
 import it.unicam.cs.ids.models.Team;
@@ -41,7 +43,7 @@ public class HackathonService implements IHackathonService {
             throw new IllegalArgumentException("Organizer not found in the system");
         }
         if (organizer.getRole() != StaffRole.ORGANIZER) {
-            throw new SecurityException("Only organizers can create hackathons.");
+            throw new UnauthorizedActionException("Only organizers can create hackathons.");
         }
 
         // 2. Recupero il Giudice dal DB usando l'ID passato nel DTO
@@ -128,7 +130,7 @@ public class HackathonService implements IHackathonService {
 
         // 2. Controllo di sicurezza: chi fa la richiesta è davvero l'organizzatore di questo hackathon?
         if (!hackathon.getOrganizer().getId().equals(organizerId)){
-            throw new SecurityException("Solo l'organizzatore può aggiungere mentori a questo hackathon");
+            throw new UnauthorizedActionException("Solo l'organizzatore può aggiungere mentori a questo hackathon");
         }
 
         // 3. Recupero il Mentore da aggiungere
@@ -160,7 +162,7 @@ public class HackathonService implements IHackathonService {
 
         // 1. Controllo di Sicurezza: Solo l'organizzatore di QUESTO hackathon può farlo
         if (!hackathon.getOrganizer().getId().equals(organizerId)) {
-            throw new SecurityException("Solo l'organizzatore assegnato può proclamare il vincitore.");
+            throw new UnauthorizedActionException("Solo l'organizzatore assegnato può proclamare il vincitore.");
         }
 
         // 2. Controllo di Stato: L'hackathon deve essere in valutazione
@@ -195,6 +197,19 @@ public class HackathonService implements IHackathonService {
         unitOfWork.getHackathonRepository().save(hackathon);
 
         return mapToDTO(hackathon);
+    }
+
+
+    @Override
+    public List<HackathonPublicResponseDTO> getHackathonsPublicInfo() {
+        return unitOfWork.getHackathonRepository().findAll().stream()
+                .map(h -> new HackathonPublicResponseDTO(
+                        h.getName(),
+                        h.getStartDate(),
+                        h.getStatus(),
+                        h.getWinner() != null ? h.getWinner().getName() : "In progress/N.D."
+                ))
+                .toList();
     }
 
     private HackathonResponseDTO mapToDTO(Hackathon h) {

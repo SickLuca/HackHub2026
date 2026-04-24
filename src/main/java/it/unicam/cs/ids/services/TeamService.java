@@ -3,6 +3,7 @@ package it.unicam.cs.ids.services;
 import it.unicam.cs.ids.dtos.requests.CreateTeamDTO;
 import it.unicam.cs.ids.dtos.requests.SubscribeTeamDTO;
 import it.unicam.cs.ids.dtos.responses.TeamResponseDTO;
+import it.unicam.cs.ids.exceptions.UnauthorizedActionException;
 import it.unicam.cs.ids.models.DefaultUser;
 import it.unicam.cs.ids.models.Hackathon;
 import it.unicam.cs.ids.models.Report;
@@ -59,7 +60,7 @@ public class TeamService implements ITeamService {
                 .orElseThrow(() -> new IllegalArgumentException("Utente non trovato"));
 
         if (leader.getRole() != UserRole.TEAM_LEADER) {
-            throw new SecurityException("Solo il leader può iscrivere il team a un hackathon");
+            throw new UnauthorizedActionException("Solo il leader può iscrivere il team a un hackathon");
         }
 
         // 2. Deduzione sicura del team

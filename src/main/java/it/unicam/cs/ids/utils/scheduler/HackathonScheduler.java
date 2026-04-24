@@ -1,11 +1,15 @@
 package it.unicam.cs.ids.utils.scheduler;
 
 import it.unicam.cs.ids.models.Hackathon;
+import it.unicam.cs.ids.models.Invitation;
 import it.unicam.cs.ids.models.Submission;
 import it.unicam.cs.ids.models.utils.HackathonStatus;
+import it.unicam.cs.ids.models.utils.InvitationStatus;
 import it.unicam.cs.ids.models.utils.SubmissionStatus;
 import it.unicam.cs.ids.repositories.IHackathonRepository;
+import it.unicam.cs.ids.repositories.IInvitationRepository;
 import it.unicam.cs.ids.repositories.ISubmissionRepository;
+import it.unicam.cs.ids.utils.unitOfWork.IUnitOfWork;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,17 +20,15 @@ import java.util.List;
 @Component
 public class HackathonScheduler {
 
-    private final IHackathonRepository hackathonRepository;
-    private final ISubmissionRepository submissionRepository;
+    private final IUnitOfWork unitOfWork;
 
-    public HackathonScheduler(IHackathonRepository hackathonRepository, ISubmissionRepository submissionRepository) {
-        this.hackathonRepository = hackathonRepository;
-        this.submissionRepository = submissionRepository;
+    public HackathonScheduler(IUnitOfWork unitOfWork) {
+        this.unitOfWork = unitOfWork;
     }
 
     /**
-     * Questo task viene eseguito ogni minuto (60000 millisecondi).
-     * Gestisce i passaggi di stato automatici dell'Hackathon in base alle date.
+     * This task is being repeated every (60000 millisecondi).
+     * Manages hackathon's state switches based on the date.
      */
     @Scheduled(fixedRate = 60000)
     @Transactional
@@ -35,7 +37,7 @@ public class HackathonScheduler {
 
         // --- 1. Da REGISTRATION a IN_PROGRESS ---
         // Recuperiamo tutti gli hackathon in fase di registrazione
-        List<Hackathon> registrationHackathons = hackathonRepository.findAll().stream()
+        List<Hackathon> registrationHackathons = unitOfWork.getHackathonRepository().findAll().stream()
                 .filter(h -> h.getStatus() == HackathonStatus.REGISTRATION)
                 .toList();
 
@@ -43,14 +45,14 @@ public class HackathonScheduler {
             // Se la data di scadenza iscrizioni è passata
             if (now.isAfter(h.getRegistrationDeadline())) {
                 h.setStatus(HackathonStatus.IN_PROGRESS);
-                hackathonRepository.save(h);
-                System.out.println("[Scheduler] Hackathon '" + h.getName() + "' è ora IN_PROGRESS. Le iscrizioni sono chiuse.");
+                unitOfWork.getHackathonRepository().save(h);
+                System.out.println("[Scheduler] Hackathon '" + h.getName() + "' is now IN_PROGRESS. Registration deadline passed.");
             }
         }
 
         // --- 2. Da IN_PROGRESS a UNDER_EVALUATION ---
         // Recuperiamo tutti gli hackathon in corso
-        List<Hackathon> inProgressHackathons = hackathonRepository.findAll().stream()
+        List<Hackathon> inProgressHackathons = unitOfWork.getHackathonRepository().findAll().stream()
                 .filter(h -> h.getStatus() == HackathonStatus.IN_PROGRESS)
                 .toList();
 
@@ -60,20 +62,19 @@ public class HackathonScheduler {
 
                 // 1. Cambiamo lo stato dell'Hackathon
                 h.setStatus(HackathonStatus.UNDER_EVALUATION);
-                hackathonRepository.save(h);
+                unitOfWork.getHackathonRepository().save(h);
 
                 // 2. Chiudiamo tutte le sottomissioni OPEN di questo hackathon
-                List<Submission> submissions = submissionRepository.findByHackathonId(h.getId());
+                List<Submission> submissions = unitOfWork.getSubmissionRepository().findByHackathonId(h.getId());
                 for (Submission sub : submissions) {
                     if (sub.getStatus() == SubmissionStatus.OPEN) {
                         sub.setStatus(SubmissionStatus.CLOSED);
-                        submissionRepository.save(sub);
+                        unitOfWork.getSubmissionRepository().save(sub);
                     }
                 }
 
-                System.out.println("[Scheduler] Hackathon '" + h.getName() + "' è ora UNDER_EVALUATION. Sottomissioni chiuse per i giudici.");
+                System.out.println("[Scheduler] Hackathon '" + h.getName() + "' is now UNDER_EVALUATION. Submissions are now evaluable by the judge.");
             }
         }
-
     }
 }

@@ -4,6 +4,7 @@ import it.unicam.cs.ids.dtos.requests.CreateSubmissionDTO;
 import it.unicam.cs.ids.dtos.requests.EvaluateSubmissionDTO;
 import it.unicam.cs.ids.dtos.responses.SubmissionResponseDTO;
 import it.unicam.cs.ids.dtos.requests.UpdateSubmissionDTO;
+import it.unicam.cs.ids.exceptions.UnauthorizedActionException;
 import it.unicam.cs.ids.models.DefaultUser;
 import it.unicam.cs.ids.models.Hackathon;
 import it.unicam.cs.ids.models.Submission;
@@ -105,7 +106,7 @@ public class SubmissionService implements ISubmissionService {
 
         DefaultUser user = unitOfWork.getDefaultUserRepository().findById(userId).orElseThrow();
         if (user.getTeam() == null || !submission.getTeam().getId().equals(user.getTeam().getId())) {
-            throw new SecurityException("Non puoi modificare una sottomissione che non appartiene al tuo team.");
+            throw new UnauthorizedActionException("Non puoi modificare una sottomissione che non appartiene al tuo team.");
         }
 
         submission.setProjectUrl(request.projectUrl());
@@ -128,7 +129,7 @@ public class SubmissionService implements ISubmissionService {
 
         // 2. Controllo di sicurezza: chi valuta è davvero il giudice di questo Hackathon?
         if (!hackathon.getJudge().getId().equals(judgeId)) {
-            throw new SecurityException("Non sei il giudice assegnato a questo Hackathon");
+            throw new UnauthorizedActionException("Non sei il giudice assegnato a questo Hackathon");
         }
 
         if (hackathon.getStatus() != HackathonStatus.UNDER_EVALUATION) {
@@ -158,7 +159,7 @@ public class SubmissionService implements ISubmissionService {
 
         // Controllo Sicurezza: lo staff fa parte di questo hackathon?
         if (!isStaffAssignedToHackathon(hackathon, staffId)) {
-            throw new SecurityException("Non sei autorizzato a visualizzare le sottomissioni di questo hackathon.");
+            throw new UnauthorizedActionException("Non sei autorizzato a visualizzare le sottomissioni di questo hackathon.");
         }
 
         List<Submission> submissions = unitOfWork.getSubmissionRepository().findByHackathonId(hackathonId);
@@ -177,7 +178,7 @@ public class SubmissionService implements ISubmissionService {
 
         // Controllo Sicurezza: lo staff fa parte dell'hackathon a cui appartiene questa sottomissione?
         if (!isStaffAssignedToHackathon(submission.getHackathon(), staffId)) {
-            throw new SecurityException("Non sei autorizzato a visualizzare i dettagli di questa sottomissione.");
+            throw new UnauthorizedActionException("Non sei autorizzato a visualizzare i dettagli di questa sottomissione.");
         }
 
         return mapToDTO(submission);
