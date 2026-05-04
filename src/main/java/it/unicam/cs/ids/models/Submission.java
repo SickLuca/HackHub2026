@@ -8,6 +8,13 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 
+/**
+ * Entità che rappresenta la consegna di un progetto (submission) da parte di un team.
+ * <p>
+ * Contiene i dettagli del progetto presentato, come l'URL del repository o della demo,
+ * la descrizione, e i risultati della valutazione (punteggio e feedback del giudice).
+ * </p>
+ */
 @Entity
 @Getter
 @Setter

@@ -19,6 +19,15 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 
+/**
+ * Servizio per la gestione dei team.
+ * <p>
+ * Contiene la logica per la creazione di un nuovo team, l'iscrizione dello stesso
+ * a un hackathon, il recupero delle informazioni del team dell'utente corrente
+ * e la gestione dell'abbandono da parte di un membro (con logica per gestire
+ * l'eventuale chiusura del team se a uscire è il leader).
+ * </p>
+ */
 @Service
 @Transactional
 public class TeamService implements ITeamService {

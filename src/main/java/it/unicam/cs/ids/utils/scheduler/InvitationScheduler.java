@@ -10,6 +10,13 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * Scheduler per le operazioni periodiche sugli Inviti.
+ * <p>
+ * Esegue task in background per controllare quali inviti abbiano superato
+ * il limite massimo di tempo consentito e aggiorna il loro stato a EXPIRED.
+ * </p>
+ */
 @Component
 public class InvitationScheduler {
 

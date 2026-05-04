@@ -7,6 +7,14 @@ import it.unicam.cs.ids.models.utils.HackathonStatus;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * Implementazione concreta del pattern Builder per l'entità {@link Hackathon}.
+ * <p>
+ * Consente di configurare passo-passo gli attributi (es. titolo, date, premi, 
+ * staff) e restituisce un oggetto Hackathon completamente inizializzato 
+ * tramite il metodo {@code build()}.
+ * </p>
+ */
 public class ConcreteHackathonBuilder implements HackathonBuilder {
     private final Hackathon hackathon;
 

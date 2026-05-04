@@ -11,6 +11,14 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 
+/**
+ * Entità che rappresenta un utente dello staff organizzativo.
+ * <p>
+ * Estende l'entità astratta {@link User} e modella ruoli specifici come
+ * {@code ORGANIZER}, {@code MENTOR} e {@code JUDGE}. Tali ruoli hanno
+ * permessi elevati all'interno della piattaforma.
+ * </p>
+ */
 @Entity
 @Table(name = "staff_users")
 @Getter

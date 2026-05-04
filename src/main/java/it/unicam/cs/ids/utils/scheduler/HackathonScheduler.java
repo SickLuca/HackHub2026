@@ -1,22 +1,23 @@
 package it.unicam.cs.ids.utils.scheduler;
-
 import it.unicam.cs.ids.models.Hackathon;
-import it.unicam.cs.ids.models.Invitation;
 import it.unicam.cs.ids.models.Submission;
 import it.unicam.cs.ids.models.utils.HackathonStatus;
-import it.unicam.cs.ids.models.utils.InvitationStatus;
 import it.unicam.cs.ids.models.utils.SubmissionStatus;
-import it.unicam.cs.ids.repositories.IHackathonRepository;
-import it.unicam.cs.ids.repositories.IInvitationRepository;
-import it.unicam.cs.ids.repositories.ISubmissionRepository;
 import it.unicam.cs.ids.utils.unitOfWork.IUnitOfWork;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * Scheduler per le operazioni periodiche sugli Hackathon e sulle relative Submission.
+ * <p>
+ * Verifica a intervalli regolari le scadenze (es. registrationDeadline, submitDeadline)
+ * e aggiorna automaticamente gli stati (es. da REGISTRATION_OPEN a IN_PROGRESS,
+ * e da IN_PROGRESS a CLOSED) oltre allo stato delle relative submission.
+ * </p>
+ */
 @Component
 public class HackathonScheduler {
 

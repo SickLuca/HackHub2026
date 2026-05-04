@@ -6,6 +6,14 @@ import it.unicam.cs.ids.models.StaffUser;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * Interfaccia Builder per la creazione di istanze di {@link Hackathon}.
+ * <p>
+ * Fornisce un'interfaccia fluida per impostare in modo incrementale
+ * i vari parametri complessi di un hackathon, prima di invocarne 
+ * la costruzione finale.
+ * </p>
+ */
 public interface HackathonBuilder {
 
     HackathonBuilder withName(String name);

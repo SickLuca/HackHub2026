@@ -3,6 +3,15 @@ package it.unicam.cs.ids.utils.adapter;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
+/**
+ * Adapter concreto per l'integrazione con Calendly.
+ * <p>
+ * Implementa {@link ICalendarService} traducendo i dati del dominio nel
+ * formato supportato dall'{@link ExternalCalendlyApi}.
+ * È contrassegnato con {@link Primary} per indicare a Spring di utilizzarlo
+ * come implementazione di default per l'interfaccia.
+ * </p>
+ */
 @Service
 @Primary // Dice a Spring che questo è l'Adapter di default da usare
 public class CalendlyCalendarAdapter implements ICalendarService {

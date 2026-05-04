@@ -9,6 +9,14 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+/**
+ * Componente responsabile della risoluzione ed esecuzione della corretta strategia di pagamento.
+ * <p>
+ * Tramite iniezione delle dipendenze, raccoglie tutte le implementazioni
+ * di {@link IPaymentStrategy} in una Map e vi delega le richieste
+ * di pagamento (es. iscrizione team a pagamento) a runtime.
+ * </p>
+ */
 @Service
 public class PaymentProcessor {
 

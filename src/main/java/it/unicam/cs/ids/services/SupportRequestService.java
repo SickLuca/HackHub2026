@@ -18,6 +18,14 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Servizio per la gestione delle richieste di supporto tecnico/mentoring.
+ * <p>
+ * Implementa le funzionalità per la creazione di richieste di aiuto
+ * da parte dei team e permette ai mentori di programmare call di supporto
+ * (appoggiandosi all'{@link ICalendarService} per generare i link ai meeting).
+ * </p>
+ */
 @Service
 @Transactional
 public class SupportRequestService implements ISupportRequestService {

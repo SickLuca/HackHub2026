@@ -14,6 +14,14 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+/**
+ * Servizio per la gestione dei JSON Web Token (JWT).
+ * <p>
+ * Fornisce metodi per la generazione di nuovi token, l'estrazione
+ * delle informazioni (claims) in essi contenute (come l'email dell'utente)
+ * e la verifica della loro validità e scadenza.
+ * </p>
+ */
 @Service
 public class JwtService {
 

@@ -10,6 +10,14 @@ import lombok.Setter;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Entità che rappresenta un utente partecipante all'hackathon.
+ * <p>
+ * Estende l'entità astratta {@link User} e contiene le informazioni
+ * specifiche dei partecipanti, come il ruolo (es. {@code TEAM_LEADER}, 
+ * {@code TEAM_MEMBER}), il team di appartenenza e gli inviti ricevuti.
+ * </p>
+ */
 @Entity
 @Table(name = "default_users")
 @Getter

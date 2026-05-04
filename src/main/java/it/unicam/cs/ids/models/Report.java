@@ -8,6 +8,14 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 
+/**
+ * Entità che rappresenta una segnalazione (report) creata da un mentore.
+ * <p>
+ * Utilizzata per segnalare violazioni del regolamento da parte di un team
+ * durante un hackathon. Contiene lo stato della segnalazione e le eventuali
+ * note di decisione prese dall'organizzatore.
+ * </p>
+ */
 @Entity
 @Table(name = "reports")
 @Getter

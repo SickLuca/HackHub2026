@@ -15,6 +15,14 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * Controller REST per la gestione degli hackathon.
+ * <p>
+ * Fornisce endpoint per la creazione, la consultazione,
+ * l'assegnazione di mentori e la proclamazione del vincitore di un hackathon.
+ * Le operazioni di scrittura sono riservate agli utenti con ruolo {@code ORGANIZER}.
+ * </p>
+ */
 @RestController
 @RequestMapping("/api/hackathon")
 public class HackathonController {
@@ -25,6 +33,13 @@ public class HackathonController {
         this.hackathonService = hackathonService;
     }
 
+    /**
+     * Crea un nuovo hackathon.
+     * <p>Accessibile solo agli utenti con ruolo {@code ORGANIZER}.</p>
+     *
+     * @param request DTO con i dati dell'hackathon da creare (titolo, descrizione, date, ecc.)
+     * @return {@link HackathonResponseDTO} con i dettagli dell'hackathon appena creato
+     */
     @PostMapping("/create")
     @PreAuthorize("hasRole('ORGANIZER')")
     public ResponseEntity<HackathonResponseDTO> createHackathon(@Valid @RequestBody CreateHackathonDTO request) {
@@ -33,14 +48,27 @@ public class HackathonController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
+    /**
+     * Restituisce la lista completa di tutti gli hackathon presenti nel sistema.
+     * <p>Accessibile a qualsiasi utente autenticato.</p>
+     *
+     * @return lista di {@link HackathonResponseDTO} con i dettagli completi di ogni hackathon
+     */
     @GetMapping("/getAll")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<HackathonResponseDTO>> getAllHackathons() {
         List<HackathonResponseDTO> response = hackathonService.getAllHackathons();
-        // Restituisce la lista con il codice HTTP 200 (OK)
         return ResponseEntity.ok(response);
     }
 
+    /**
+     * Aggiunge un mentore a un hackathon esistente.
+     * <p>Accessibile solo agli utenti con ruolo {@code ORGANIZER}.
+     * L'organizzatore deve essere il proprietario dell'hackathon.</p>
+     *
+     * @param request DTO contenente l'ID dell'hackathon e l'ID del mentore da aggiungere
+     * @return {@link HackathonResponseDTO} aggiornato con il nuovo mentore
+     */
     @PostMapping("/addMentors")
     @PreAuthorize("hasRole('ORGANIZER')")
     public ResponseEntity<HackathonResponseDTO> addMentorToHackathon(@Valid @RequestBody AddMentorDTO request) {
@@ -49,6 +77,14 @@ public class HackathonController {
         return ResponseEntity.ok(response);
     }
     
+    /**
+     * Proclama il vincitore di un hackathon.
+     * <p>Accessibile solo agli utenti con ruolo {@code ORGANIZER}.
+     * L'hackathon deve essere nello stato appropriato per la proclamazione.</p>
+     *
+     * @param request DTO contenente l'ID dell'hackathon e l'ID del team vincitore
+     * @return {@link HackathonResponseDTO} aggiornato con il vincitore proclamato
+     */
     @PostMapping("/proclaimWinner")
     @PreAuthorize("hasRole('ORGANIZER')")
     public ResponseEntity<HackathonResponseDTO> proclaimWinner(@Valid @RequestBody ProclaimWinnerDTO request) {
@@ -59,6 +95,13 @@ public class HackathonController {
         return ResponseEntity.ok(response);
     }
 
+    /**
+     * Restituisce le informazioni pubbliche di tutti gli hackathon.
+     * <p>Espone un sottoinsieme ridotto di dati, adatto alla visualizzazione
+     * in contesti dove non servono i dettagli completi (es. homepage).</p>
+     *
+     * @return lista di {@link HackathonPublicResponseDTO} con le informazioni pubbliche
+     */
     @GetMapping("/getPublicInfo")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<HackathonPublicResponseDTO>> getPublicHackathons() {

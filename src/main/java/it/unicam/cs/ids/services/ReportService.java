@@ -21,6 +21,15 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Servizio per la gestione dei report/segnalazioni di violazioni.
+ * <p>
+ * Consente ai mentori di segnalare eventuali comportamenti scorretti
+ * o violazioni del regolamento da parte dei team. Fornisce inoltre
+ * agli organizzatori i metodi per esaminare tali report e intraprendere
+ * azioni disciplinari.
+ * </p>
+ */
 @Service
 @Transactional
 public class ReportService implements IReportService {

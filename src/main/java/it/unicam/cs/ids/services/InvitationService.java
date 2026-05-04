@@ -20,6 +20,15 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Servizio per la gestione degli inviti ai team.
+ * <p>
+ * Fornisce i metodi per l'invio di inviti da parte dei team leader
+ * verso utenti senza team e permette a questi ultimi di consultare
+ * gli inviti ricevuti e di accettarli o rifiutarli, aggiornando
+ * di conseguenza i membri del team.
+ * </p>
+ */
 @Service
 @Transactional
 public class InvitationService implements IInvitationService {

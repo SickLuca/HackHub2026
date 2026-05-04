@@ -8,6 +8,14 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 
+/**
+ * Entità che rappresenta una richiesta di supporto creata da un team.
+ * <p>
+ * Utilizzata dai team per richiedere assistenza tecnica o generica
+ * ai mentori di un hackathon. Permette inoltre di pianificare un incontro
+ * tramite un link di videochiamata.
+ * </p>
+ */
 @Entity
 @Table(name = "support_requests")
 @Getter

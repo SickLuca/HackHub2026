@@ -25,6 +25,15 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Servizio per la gestione del ciclo di vita degli Hackathon.
+ * <p>
+ * Implementa la logica di business per la creazione di nuovi hackathon
+ * (utilizzando il pattern Builder), la consultazione degli eventi attivi,
+ * l'assegnazione di mentori da parte degli organizzatori e la proclamazione
+ * del team vincitore al termine della competizione.
+ * </p>
+ */
 @Service
 @Transactional
 public class HackathonService implements IHackathonService {

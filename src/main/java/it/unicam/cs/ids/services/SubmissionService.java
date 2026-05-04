@@ -22,6 +22,15 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Servizio per la gestione delle submission (consegne dei progetti).
+ * <p>
+ * Contiene la logica per permettere ai team di presentare i propri progetti
+ * entro la scadenza stabilita (deadline). Permette anche l'aggiornamento
+ * delle submission e la valutazione da parte dei giudici (assegnazione
+ * di un punteggio e di un feedback).
+ * </p>
+ */
 @Service
 @Transactional
 public class SubmissionService implements ISubmissionService {

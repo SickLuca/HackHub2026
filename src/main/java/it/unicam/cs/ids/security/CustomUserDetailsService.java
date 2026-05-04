@@ -7,6 +7,14 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+/**
+ * Servizio per il caricamento dei dettagli dell'utente durante l'autenticazione.
+ * <p>
+ * Implementa l'interfaccia {@link UserDetailsService} di Spring Security per 
+ * recuperare l'utente dal database tramite la sua email (utilizzata come username).
+ * Ritorna un'istanza di {@link CustomUserDetails}.
+ * </p>
+ */
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
 

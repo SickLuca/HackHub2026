@@ -14,6 +14,14 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+/**
+ * Servizio responsabile della gestione dell'autenticazione degli utenti.
+ * <p>
+ * Gestisce la registrazione di nuovi utenti, il login tramite credenziali
+ * (email e password) e la generazione dei JSON Web Token (JWT) da restituire
+ * ai client per l'autorizzazione delle chiamate successive.
+ * </p>
+ */
 @Service
 public class AuthenticationService {
 

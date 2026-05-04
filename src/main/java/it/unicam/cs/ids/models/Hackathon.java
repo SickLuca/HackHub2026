@@ -12,6 +12,14 @@ import java.util.List;
 
 //TODO: Jpa, da fare prima di altri TODO
 
+/**
+ * Entità che rappresenta un Hackathon all'interno del sistema.
+ * <p>
+ * Memorizza tutte le informazioni di un evento, incluse le date di
+ * registrazione e sottomissione, il premio, il regolamento e le associazioni
+ * con lo staff (organizzatore, mentori, giudice) e i team partecipanti.
+ * </p>
+ */
 @Entity
 @Table(name = "hackathons")
 @Getter

@@ -9,6 +9,14 @@ import lombok.Setter;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Entità che rappresenta un team partecipante a un hackathon.
+ * <p>
+ * Aggrega più utenti partecipanti ({@link DefaultUser}), è associato a un
+ * singolo hackathon e gestisce il bilancio (es. per eventuali premi vinti),
+ * le submission, le richieste di supporto e i report ricevuti.
+ * </p>
+ */
 @Entity
 @Getter
 @Setter

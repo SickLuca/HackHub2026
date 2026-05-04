@@ -11,6 +11,14 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.List;
 
+/**
+ * Implementazione personalizzata di {@link UserDetails} di Spring Security.
+ * <p>
+ * Funge da adapter (wrapper) attorno all'entità {@link User} del dominio,
+ * fornendo a Spring Security le informazioni necessarie per l'autenticazione
+ * e l'autorizzazione (es. credenziali, stato dell'account e ruoli/autorità).
+ * </p>
+ */
 @Getter
 public class CustomUserDetails implements UserDetails {
 

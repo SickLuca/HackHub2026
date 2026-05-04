@@ -3,6 +3,15 @@ package it.unicam.cs.ids.utils.unitOfWork;
 import it.unicam.cs.ids.repositories.*;
 import org.springframework.stereotype.Component;
 
+/**
+ * Implementazione concreta dell'{@link IUnitOfWork}.
+ * <p>
+ * Centralizza l'iniezione e l'accesso ai vari Repository (Spring Data JPA) del sistema.
+ * In Spring, la transazionalità effettiva è tipicamente gestita tramite 
+ * {@code @Transactional} nei service, quindi questo componente agisce 
+ * primariamente come un wrapper organizzativo per ridurre il boilerplate.
+ * </p>
+ */
 @Component
 public class UnitOfWork implements IUnitOfWork{
 

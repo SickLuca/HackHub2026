@@ -17,6 +17,15 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+/**
+ * Classe di configurazione principale per Spring Security.
+ * <p>
+ * Definisce le regole di accesso alle risorse (quali endpoint sono pubblici
+ * e quali richiedono autenticazione), disabilita CSRF, imposta la gestione
+ * delle sessioni su stateless e registra il filtro personalizzato {@link JwtAuthenticationFilter}.
+ * Fornisce inoltre i bean necessari per l'autenticazione, come l'encoder delle password.
+ * </p>
+ */
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {

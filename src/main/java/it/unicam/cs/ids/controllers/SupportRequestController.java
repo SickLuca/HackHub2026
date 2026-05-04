@@ -16,6 +16,13 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * Controller REST per la gestione delle richieste di supporto.
+ * <p>
+ * Permette ai membri dei team di creare richieste di aiuto
+ * e ai mentori di visualizzarle e pianificare chiamate di supporto.
+ * </p>
+ */
 @RestController
 @RequestMapping("/api/supportRequest")
 @Validated
@@ -26,6 +33,13 @@ public class SupportRequestController {
         this.supportRequestService = supportRequestService;
     }
 
+    /**
+     * Crea una nuova richiesta di supporto per il team dell'utente.
+     * <p>Accessibile agli utenti con ruolo {@code TEAM_LEADER} o {@code TEAM_MEMBER}.</p>
+     *
+     * @param request DTO contenente il messaggio e l'hackathon di riferimento
+     * @return {@link SupportRequestResponseDTO} con i dettagli della richiesta creata
+     */
     @PostMapping("/create")
     @PreAuthorize("hasAnyRole('TEAM_LEADER', 'TEAM_MEMBER')")
     public ResponseEntity<SupportRequestResponseDTO> createSupportRequest(@Valid @RequestBody CreateSupportRequestDTO request) {
@@ -35,6 +49,14 @@ public class SupportRequestController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
+    /**
+     * Restituisce tutte le richieste di supporto per un hackathon.
+     * <p>Accessibile solo agli utenti con ruolo {@code MENTOR}.
+     * Il mentore deve essere assegnato all'hackathon specificato.</p>
+     *
+     * @param hackathonId l'ID dell'hackathon di cui recuperare le richieste
+     * @return lista di {@link SupportRequestResponseDTO}
+     */
     @GetMapping("/getAll")
     @PreAuthorize("hasRole('MENTOR')")
     public ResponseEntity<List<SupportRequestResponseDTO>> getRequestsForHackathon(@RequestParam
@@ -47,6 +69,14 @@ public class SupportRequestController {
         return ResponseEntity.ok(response);
     }
 
+    /**
+     * Pianifica una chiamata di supporto per una richiesta esistente.
+     * <p>Accessibile solo agli utenti con ruolo {@code MENTOR}.
+     * Genera un link per la videochiamata tramite il servizio calendario integrato (Adapter pattern).</p>
+     *
+     * @param request DTO contenente l'ID della richiesta e i dettagli della chiamata
+     * @return {@link SupportRequestResponseDTO} con il link alla chiamata pianificata
+     */
     @PostMapping("/scheduleCall")
     @PreAuthorize("hasRole('MENTOR')")
     public ResponseEntity<SupportRequestResponseDTO> scheduleCall(@Valid @RequestBody ScheduleCallDTO request) {

@@ -6,15 +6,31 @@ import it.unicam.cs.ids.models.utils.PaymentMethod;
 import it.unicam.cs.ids.utils.unitOfWork.IUnitOfWork;
 import org.springframework.stereotype.Component;
 
+/**
+ * Implementation of {@link IPaymentStrategy} for processing credit card payments.
+ */
 @Component
 public class CreditCardPaymentStrategy implements IPaymentStrategy {
 
     private final IUnitOfWork unitOfWork;
 
+    /**
+     * Constructs a new {@code CreditCardPaymentStrategy} with the given unit of work.
+     *
+     * @param unitOfWork the unit of work used to interact with repositories
+     */
     public CreditCardPaymentStrategy(IUnitOfWork unitOfWork) {
         this.unitOfWork = unitOfWork;
     }
 
+    /**
+     * Processes a payment request using a credit card.
+     * It adds the requested amount to the team's balance.
+     *
+     * @param request the payment request details
+     * @return {@code true} if the payment is successfully processed
+     * @throws IllegalArgumentException if the team specified in the request is not found
+     */
     @Override
     public boolean pay(PaymentRequestDTO request) {
 
@@ -28,6 +44,11 @@ public class CreditCardPaymentStrategy implements IPaymentStrategy {
         return true;
     }
 
+    /**
+     * Retrieves the payment method type associated with this strategy.
+     *
+     * @return the {@link PaymentMethod#CREDIT_CARD}
+     */
     @Override
     public PaymentMethod getPaymentMethod() {
         return PaymentMethod.CREDIT_CARD;
