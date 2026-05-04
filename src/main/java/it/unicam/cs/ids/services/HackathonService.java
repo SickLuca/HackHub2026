@@ -5,6 +5,9 @@ import it.unicam.cs.ids.dtos.requests.CreateHackathonDTO;
 import it.unicam.cs.ids.dtos.requests.ProclaimWinnerDTO;
 import it.unicam.cs.ids.dtos.responses.HackathonPublicResponseDTO;
 import it.unicam.cs.ids.dtos.responses.HackathonResponseDTO;
+import it.unicam.cs.ids.exceptions.InvalidInputException;
+import it.unicam.cs.ids.exceptions.ResourceNotFoundException;
+import it.unicam.cs.ids.exceptions.RuleViolationException;
 import it.unicam.cs.ids.exceptions.UnauthorizedActionException;
 import it.unicam.cs.ids.models.Hackathon;
 import it.unicam.cs.ids.models.StaffUser;
@@ -40,7 +43,7 @@ public class HackathonService implements IHackathonService {
         // 1. Recupero l'Organizzatore.
         StaffUser organizer = unitOfWork.getStaffUserRepository().findById(organizerId).orElse(null);
         if (organizer == null) {
-            throw new IllegalArgumentException("Organizer not found in the system");
+            throw new ResourceNotFoundException("Organizer not found in the system");
         }
         if (organizer.getRole() != StaffRole.ORGANIZER) {
             throw new UnauthorizedActionException("Only organizers can create hackathons.");
@@ -49,18 +52,18 @@ public class HackathonService implements IHackathonService {
         // 2. Recupero il Giudice dal DB usando l'ID passato nel DTO
         StaffUser judge = unitOfWork.getStaffUserRepository().findById(request.judgeId()).orElse(null);
         if (judge == null) {
-            throw new IllegalArgumentException("Judge not found in the system.");
+            throw new ResourceNotFoundException("Judge not found in the system.");
         }
 
         if(request.mentorsIdS().isEmpty()){
-            throw new  IllegalArgumentException("At least one mentor is required.");
+            throw new InvalidInputException("At least one mentor is required.");
         }
         // 3. Recupero i Mentori dal DB
         List<StaffUser> mentors = new ArrayList<>();
         for (Long mentorId : request.mentorsIdS()) {
             StaffUser mentor = unitOfWork.getStaffUserRepository().findById(mentorId).orElse(null);
             if (mentor == null) {
-                throw new IllegalArgumentException("Mentor with ID " + mentorId + " not found in the system.");
+                throw new ResourceNotFoundException("Mentor with ID " + mentorId + " not found in the system.");
             }
             mentors.add(mentor);
         }
@@ -121,11 +124,11 @@ public class HackathonService implements IHackathonService {
         // 1. Recupero l'Hackathon
         Hackathon hackathon = unitOfWork.getHackathonRepository().findById(request.hackathonId()).orElse(null);
         if (hackathon == null) {
-            throw new IllegalArgumentException("Hackathon non trovato");
+            throw new ResourceNotFoundException("Hackathon non trovato");
         }
 
         if (hackathon.getStatus() == HackathonStatus.FINISHED || hackathon.getStatus() == HackathonStatus.UNDER_EVALUATION) {
-            throw new IllegalStateException("Non puoi più aggiungere mentori a questo hackathon");
+            throw new InvalidInputException("Non puoi più aggiungere mentori a questo hackathon");
         }
 
         // 2. Controllo di sicurezza: chi fa la richiesta è davvero l'organizzatore di questo hackathon?
@@ -136,7 +139,7 @@ public class HackathonService implements IHackathonService {
         // 3. Recupero il Mentore da aggiungere
         StaffUser mentor = unitOfWork.getStaffUserRepository().findById(request.mentorId()).orElse(null);
         if (mentor == null) {
-            throw new IllegalArgumentException("Mentore non trovato nel sistema");
+            throw new ResourceNotFoundException("Mentore non trovato nel sistema");
         }
 
         // 4. Controllo duplicati: il mentore è già assegnato?
@@ -144,7 +147,7 @@ public class HackathonService implements IHackathonService {
                 .anyMatch(m -> m.getId().equals(mentor.getId()));
 
         if (isAlreadyMentor) {
-            throw new IllegalStateException("Questo utente è già un mentore per questo hackathon");
+            throw new InvalidInputException("Questo utente è già un mentore per questo hackathon");
         }
 
         // 5. Aggiunta e salvataggio
@@ -158,7 +161,7 @@ public class HackathonService implements IHackathonService {
   @Override
     public HackathonResponseDTO proclaimWinner(ProclaimWinnerDTO request, Long organizerId) {
         Hackathon hackathon = unitOfWork.getHackathonRepository().findById(request.hackathonId())
-                .orElseThrow(() -> new IllegalArgumentException("Hackathon non trovato"));
+                .orElseThrow(() -> new ResourceNotFoundException("Hackathon non trovato"));
 
         // 1. Controllo di Sicurezza: Solo l'organizzatore di QUESTO hackathon può farlo
         if (!hackathon.getOrganizer().getId().equals(organizerId)) {
@@ -167,22 +170,22 @@ public class HackathonService implements IHackathonService {
 
         // 2. Controllo di Stato: L'hackathon deve essere in valutazione
         if (hackathon.getStatus() != HackathonStatus.UNDER_EVALUATION) {
-            throw new IllegalStateException("Impossibile proclamare un vincitore: l'hackathon non è in fase di valutazione.");
+            throw new RuleViolationException("Impossibile proclamare un vincitore: l'hackathon non è in fase di valutazione.");
         }
 
         boolean allEvaluated = hackathon.getSubmissions().stream()
                 .allMatch(sub -> sub.getStatus() == SubmissionStatus.EVALUATED);
 
         if (!allEvaluated) {
-            throw new IllegalStateException("Attenzione: non tutte le sottomissioni sono state valutate dal Giudice.");
+            throw new RuleViolationException("Attenzione: non tutte le sottomissioni sono state valutate dal Giudice.");
         }
 
         // 4. Recupero del Team Vincitore e controllo validità
         Team winner = unitOfWork.getTeamRepository().findById(request.winningTeamId())
-                .orElseThrow(() -> new IllegalArgumentException("Team vincitore non trovato"));
+                .orElseThrow(() -> new ResourceNotFoundException("Team vincitore non trovato"));
 
         if (!hackathon.getTeams().contains(winner)) {
-            throw new IllegalArgumentException("Il team selezionato non è iscritto a questo Hackathon.");
+            throw new ResourceNotFoundException("Il team selezionato non è iscritto a questo Hackathon.");
         }
 
         // 5. Proclamazione e Chiusura

@@ -3,6 +3,8 @@ package it.unicam.cs.ids.services;
 import it.unicam.cs.ids.dtos.requests.CreateTeamDTO;
 import it.unicam.cs.ids.dtos.requests.SubscribeTeamDTO;
 import it.unicam.cs.ids.dtos.responses.TeamResponseDTO;
+import it.unicam.cs.ids.exceptions.ResourceNotFoundException;
+import it.unicam.cs.ids.exceptions.RuleViolationException;
 import it.unicam.cs.ids.exceptions.UnauthorizedActionException;
 import it.unicam.cs.ids.models.DefaultUser;
 import it.unicam.cs.ids.models.Hackathon;
@@ -31,11 +33,11 @@ public class TeamService implements ITeamService {
     public TeamResponseDTO createTeam(CreateTeamDTO request, Long creatorId) {
         // 1. Recupero l'utente in modo sicuro
         DefaultUser creator = unitOfWork.getDefaultUserRepository().findById(creatorId)
-                .orElseThrow(() -> new IllegalArgumentException("Utente non trovato nel sistema"));
+                .orElseThrow(() -> new ResourceNotFoundException("Utente non trovato nel sistema"));
 
         // 2. Controllo regole di business: un utente può appartenere a un solo team
         if (creator.getTeam() != null || creator.getRole() != UserRole.USER_NO_TEAM) {
-            throw new IllegalStateException("L'utente appartiene già a un team!");
+            throw new RuleViolationException("L'utente appartiene già a un team!");
         }
 
         // 3. Creazione dell'entità Team
@@ -57,7 +59,7 @@ public class TeamService implements ITeamService {
     public TeamResponseDTO subscribeToHackathon(SubscribeTeamDTO request, Long leaderId) {
         // 1. Recupero l'utente autenticato e verifico il ruolo
         DefaultUser leader = unitOfWork.getDefaultUserRepository().findById(leaderId)
-                .orElseThrow(() -> new IllegalArgumentException("Utente non trovato"));
+                .orElseThrow(() -> new ResourceNotFoundException("Utente non trovato"));
 
         if (leader.getRole() != UserRole.TEAM_LEADER) {
             throw new UnauthorizedActionException("Solo il leader può iscrivere il team a un hackathon");
@@ -66,23 +68,23 @@ public class TeamService implements ITeamService {
         // 2. Deduzione sicura del team
         Team team = leader.getTeam();
         if (team == null) {
-            throw new IllegalStateException("Il team non esiste.");
+            throw new RuleViolationException("Il team non esiste.");
         }
 
         // 3. Recupero Hackathon
         Hackathon hackathon = unitOfWork.getHackathonRepository().findById(request.hackathonId())
-                .orElseThrow(() -> new IllegalArgumentException("Hackathon non trovato"));
+                .orElseThrow(() -> new ResourceNotFoundException("Hackathon non trovato"));
 
         if (hackathon.getStatus() != HackathonStatus.REGISTRATION) {
-            throw new IllegalStateException("L'Hackathon non è in fase di registrazione");
+            throw new RuleViolationException("L'Hackathon non è in fase di registrazione");
         }
 
         if (team.getSubscribedHackathon() != null) {
-            throw new IllegalStateException("Il team è già iscritto a un Hackathon.");
+            throw new RuleViolationException("Il team è già iscritto a un Hackathon.");
         }
 
         if (team.getMembers().size() > hackathon.getMaxDimensionOfTeam()) {
-            throw new IllegalStateException("Il team supera la dimensione massima per questo hackathon");
+            throw new RuleViolationException("Il team supera la dimensione massima per questo hackathon");
         }
 
         // 4. Aggiorniamo sul database
@@ -98,13 +100,13 @@ public class TeamService implements ITeamService {
     public TeamResponseDTO getTeamByCurrentUser(Long userId){
         DefaultUser user = unitOfWork.getDefaultUserRepository().findById(userId).orElse(null);
         if(user == null){
-            throw new IllegalArgumentException("Utente non trovato");
+            throw new ResourceNotFoundException("Utente non trovato");
         }
 
         Team team = user.getTeam();
 
         if(team == null){
-            throw new IllegalStateException("L'utente non appartiene a nessun team");
+            throw new RuleViolationException("L'utente non appartiene a nessun team");
         }
 
         return mapToDTO(team);
@@ -114,11 +116,11 @@ public class TeamService implements ITeamService {
     public void leaveTeam(Long userId) {
         // 1. Recupero l'utente
         DefaultUser user = unitOfWork.getDefaultUserRepository().findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("Utente non trovato"));
+                .orElseThrow(() -> new ResourceNotFoundException("Utente non trovato"));
 
         Team team = user.getTeam();
         if (team == null) {
-            throw new IllegalStateException("Non appartieni a nessun team.");
+            throw new RuleViolationException("Non appartieni a nessun team.");
         }
 
         // Salviamo il ruolo prima di modificarlo

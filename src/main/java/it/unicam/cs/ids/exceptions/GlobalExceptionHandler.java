@@ -22,9 +22,9 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.NOT_FOUND, "Risorsa Non Trovata", ex.getMessage(), request);
     }
 
-    // 2. Gestisce le vecchie IllegalStateException che hai già nei Service (oppure la nuova RuleViolationException)
-    @ExceptionHandler({IllegalStateException.class, RuleViolationException.class})
-    public ResponseEntity<ApiErrorResponseDTO> handleBusinessRulesExceptions(RuntimeException ex, HttpServletRequest request) {
+    // 2. Gestisce le eccezioni per violazioni delle regole di business
+    @ExceptionHandler(RuleViolationException.class)
+    public ResponseEntity<ApiErrorResponseDTO> handleBusinessRulesExceptions(RuleViolationException ex, HttpServletRequest request) {
         return buildResponse(HttpStatus.CONFLICT, "Violazione Regola di Business", ex.getMessage(), request);
     }
 

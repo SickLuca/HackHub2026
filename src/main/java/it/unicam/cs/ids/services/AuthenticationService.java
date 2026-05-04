@@ -3,6 +3,7 @@ package it.unicam.cs.ids.services;
 import it.unicam.cs.ids.dtos.requests.LoginRequestDTO;
 import it.unicam.cs.ids.dtos.requests.RegisterRequestDTO;
 import it.unicam.cs.ids.dtos.responses.AuthResponseDTO;
+import it.unicam.cs.ids.exceptions.InvalidInputException;
 import it.unicam.cs.ids.models.DefaultUser;
 import it.unicam.cs.ids.models.utils.UserRole;
 import it.unicam.cs.ids.security.CustomUserDetails;
@@ -32,7 +33,7 @@ public class AuthenticationService {
 
         boolean exists = unitOfWork.getUserRepository().findByEmail(request.email()).isPresent();
         if (exists) {
-            throw new IllegalArgumentException("Esiste già un utente con questa email: " + request.email());
+            throw new InvalidInputException("Esiste già un utente con questa email: " + request.email());
 
         }
 

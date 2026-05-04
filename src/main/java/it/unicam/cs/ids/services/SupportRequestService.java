@@ -3,6 +3,8 @@ package it.unicam.cs.ids.services;
 import it.unicam.cs.ids.dtos.requests.CreateSupportRequestDTO;
 import it.unicam.cs.ids.dtos.requests.ScheduleCallDTO;
 import it.unicam.cs.ids.dtos.responses.SupportRequestResponseDTO;
+import it.unicam.cs.ids.exceptions.ResourceNotFoundException;
+import it.unicam.cs.ids.exceptions.RuleViolationException;
 import it.unicam.cs.ids.exceptions.UnauthorizedActionException;
 import it.unicam.cs.ids.models.*;
 import it.unicam.cs.ids.models.utils.SupportRequestStatus;
@@ -32,19 +34,19 @@ public class SupportRequestService implements ISupportRequestService {
     public SupportRequestResponseDTO createRequest(CreateSupportRequestDTO requestDTO, Long userId) {
         // 1. Recupero Utente e Team in modo sicuro dal token
         DefaultUser user = unitOfWork.getDefaultUserRepository().findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("Utente non trovato"));
+                .orElseThrow(() -> new ResourceNotFoundException("Utente non trovato"));
 
         Team team = user.getTeam();
         if (team == null) {
-            throw new IllegalStateException("Devi appartenere a un team per poter richiedere supporto.");
+            throw new RuleViolationException("Devi appartenere a un team per poter richiedere supporto.");
         }
 
         Hackathon hackathon = unitOfWork.getHackathonRepository().findById(requestDTO.hackathonId()).orElse(null);
-        if (hackathon == null) throw new IllegalArgumentException("Hackathon non trovato");
+        if (hackathon == null) throw new ResourceNotFoundException("Hackathon non trovato");
 
         // (Opzionale) Controllare che il Team sia effettivamente iscritto a questo Hackathon
         if (!team.getSubscribedHackathon().getId().equals(hackathon.getId())) {
-            throw new IllegalStateException("Il team non è iscritto a questo Hackathon");
+            throw new RuleViolationException("Il team non è iscritto a questo Hackathon");
         }
 
         boolean exists = unitOfWork.getSupportRequestRepository().findByHackathonId(requestDTO.hackathonId()).stream()
@@ -52,7 +54,7 @@ public class SupportRequestService implements ISupportRequestService {
                 .anyMatch(request -> request.getTeam().getId().equals(team.getId())); //Vedo se esiste una richiesta a nome del team in questione
 
         if (exists) {
-            throw new IllegalStateException("Esiste già una richiesta di supporto in attesa per il tuo team in questo Hackathon");
+            throw new RuleViolationException("Esiste già una richiesta di supporto in attesa per il tuo team in questo Hackathon");
         }
 
         // 2. Creazione entità
@@ -81,7 +83,7 @@ public class SupportRequestService implements ISupportRequestService {
     public List<SupportRequestResponseDTO> getRequestsForHackathon(Long hackathonId, Long mentorId) {
         // 1. (Sicurezza) Verifichiamo che l'utente sia davvero un mentore per questo Hackathon
         Hackathon hackathon = unitOfWork.getHackathonRepository().findById(hackathonId).orElse(null);
-        if (hackathon == null) throw new IllegalArgumentException("Hackathon non trovato");
+        if (hackathon == null) throw new ResourceNotFoundException("Hackathon non trovato");
 
         boolean isMentor = hackathon.getMentors().stream()
                 .anyMatch(mentor -> mentor.getId().equals(mentorId));
@@ -104,16 +106,16 @@ public class SupportRequestService implements ISupportRequestService {
     public SupportRequestResponseDTO scheduleCall(ScheduleCallDTO request, Long mentorId) {
         // 1. Recupero la richiesta
         SupportRequest supportRequest = unitOfWork.getSupportRequestRepository().findById(request.supportRequestId())
-                .orElseThrow(() -> new IllegalArgumentException("Richiesta di supporto non trovata"));
+                .orElseThrow(() -> new ResourceNotFoundException("Richiesta di supporto non trovata"));
 
 
         // 2. Recupero il mentore
         StaffUser mentor = unitOfWork.getStaffUserRepository().findById(mentorId)
-                .orElseThrow(() -> new IllegalArgumentException("Mentore non trovato"));
+                .orElseThrow(() -> new ResourceNotFoundException("Mentore non trovato"));
 
         // 3. Verifico che la richiesta sia in stato PENDING
         if (supportRequest.getStatus() != SupportRequestStatus.PENDING) {
-            throw new IllegalStateException("Questa richiesta è già stata gestita o è chiusa.");
+            throw new RuleViolationException("Questa richiesta è già stata gestita o è chiusa.");
         }
 
         // 4. Verifico che il mentore sia assegnato all'hackathon di questa richiesta

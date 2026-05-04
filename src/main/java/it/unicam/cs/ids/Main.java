@@ -11,5 +11,6 @@ public class Main {
     public static void main(String[] args) {
         SpringApplication.run(Main.class, args);
         System.out.println("HackHub (Spring Boot) avviato con successo su http://localhost:8080 !");
-        System.out.println("Console H2 disponibile su http://localhost:8080/h2-console");    }
+        System.out.println("Console H2 disponibile su http://localhost:8080/h2-console");
+        System.out.println("Console Swagger disponibile su http://localhost:8080/swagger-ui/index.html"); }
 }

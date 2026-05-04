@@ -4,6 +4,8 @@ import it.unicam.cs.ids.dtos.requests.CreateSubmissionDTO;
 import it.unicam.cs.ids.dtos.requests.EvaluateSubmissionDTO;
 import it.unicam.cs.ids.dtos.responses.SubmissionResponseDTO;
 import it.unicam.cs.ids.dtos.requests.UpdateSubmissionDTO;
+import it.unicam.cs.ids.exceptions.ResourceNotFoundException;
+import it.unicam.cs.ids.exceptions.RuleViolationException;
 import it.unicam.cs.ids.exceptions.UnauthorizedActionException;
 import it.unicam.cs.ids.models.DefaultUser;
 import it.unicam.cs.ids.models.Hackathon;
@@ -35,25 +37,25 @@ public class SubmissionService implements ISubmissionService {
     public SubmissionResponseDTO addSubmission(CreateSubmissionDTO request, Long userId) {
         // 1. Recupero Utente e Team in modo sicuro!
         DefaultUser user = unitOfWork.getDefaultUserRepository().findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("Utente non trovato"));
+                .orElseThrow(() -> new ResourceNotFoundException("Utente non trovato"));
 
         Team team = user.getTeam();
         if (team == null) {
-            throw new IllegalStateException("Devi appartenere a un team per poter sottomettere un progetto.");
+            throw new RuleViolationException("Devi appartenere a un team per poter sottomettere un progetto.");
         }
 
         Hackathon hackathon = unitOfWork.getHackathonRepository().findById(request.hackathonId()).orElse(null);
-        if (hackathon == null) throw new IllegalArgumentException("Hackathon not found.");
+        if (hackathon == null) throw new ResourceNotFoundException("Hackathon not found.");
 
         // Controllo 1: Il team è iscritto a QUESTO hackathon?
         if (team.getSubscribedHackathon() == null || !team.getSubscribedHackathon().getId().equals(hackathon.getId())) {
-            throw new IllegalStateException("The team is not subscribed to this Hackathon.");
+            throw new RuleViolationException("The team is not subscribed to this Hackathon.");
         }
 
         // Controllo 2: La scadenza per le consegne è passata?
         // È importante verificare la data di scadenza esatta come da specifiche
         if (LocalDateTime.now().isAfter(hackathon.getSubmitDeadline())) {
-            throw new IllegalStateException("The submission deadline has already passed.");
+            throw new RuleViolationException("The submission deadline has already passed.");
         }
 
         // Cerchiamo se esiste già una sottomissione.
@@ -90,7 +92,7 @@ public class SubmissionService implements ISubmissionService {
             //TODO: oppure mappiamo la richiesta di creazione ad un update e ritorniamo l'update :)
 
             // Se esiste, informiamo che una sottomissione è già presente e che è possibile modificarla
-            throw new IllegalStateException("A submission for this Hackathon already exists.");
+            throw new RuleViolationException("A submission for this Hackathon already exists.");
         }
     }
 
@@ -98,10 +100,10 @@ public class SubmissionService implements ISubmissionService {
     public SubmissionResponseDTO updateSubmission(UpdateSubmissionDTO request, Long userId) {
         Submission submission = unitOfWork.getSubmissionRepository().findById(request.submissionId()).orElse(null);
         if (submission == null) {
-            throw new IllegalArgumentException("Submission not found.");
+            throw new ResourceNotFoundException("Submission not found.");
         }
         if (submission.getHackathon().getSubmitDeadline().isBefore(LocalDateTime.now())) {
-            throw new IllegalStateException("The submission deadline has already passed.");
+            throw new RuleViolationException("The submission deadline has already passed.");
         }
 
         DefaultUser user = unitOfWork.getDefaultUserRepository().findById(userId).orElseThrow();
@@ -122,7 +124,7 @@ public class SubmissionService implements ISubmissionService {
         // 1. Recupero la sottomissione
         Submission submission = unitOfWork.getSubmissionRepository().findById(request.submissionId()).orElse(null);
         if (submission == null) {
-            throw new IllegalArgumentException("Sottomissione non trovata");
+            throw new ResourceNotFoundException("Sottomissione non trovata");
         }
 
         Hackathon hackathon = submission.getHackathon();
@@ -133,12 +135,12 @@ public class SubmissionService implements ISubmissionService {
         }
 
         if (hackathon.getStatus() != HackathonStatus.UNDER_EVALUATION) {
-            throw new IllegalStateException("L'hackathon non è attualmente in fase di valutazione");
+            throw new RuleViolationException("L'hackathon non è attualmente in fase di valutazione");
         }
 
         //Solo closed perchè non puoi gestirla se aperta o valutata
         if (submission.getStatus() != SubmissionStatus.CLOSED ) {
-            throw new IllegalStateException("Non puoi gestire questa sottomissione");
+            throw new RuleViolationException("Non puoi gestire questa sottomissione");
         }
 
         // 5. Aggiornamento dell'entità
@@ -154,7 +156,7 @@ public class SubmissionService implements ISubmissionService {
     public List<SubmissionResponseDTO> getSubmissionsByHackathon(Long hackathonId, Long staffId) {
         Hackathon hackathon = unitOfWork.getHackathonRepository().findById(hackathonId).orElse(null);
         if (hackathon == null) {
-            throw new IllegalArgumentException("Hackathon non trovato.");
+            throw new ResourceNotFoundException("Hackathon non trovato.");
         }
 
         // Controllo Sicurezza: lo staff fa parte di questo hackathon?
@@ -173,7 +175,7 @@ public class SubmissionService implements ISubmissionService {
     public SubmissionResponseDTO getSubmissionDetails(Long submissionId, Long staffId) {
         Submission submission = unitOfWork.getSubmissionRepository().findById(submissionId).orElse(null);
         if (submission == null) {
-            throw new IllegalArgumentException("Sottomissione non trovata.");
+            throw new ResourceNotFoundException("Sottomissione non trovata.");
         }
 
         // Controllo Sicurezza: lo staff fa parte dell'hackathon a cui appartiene questa sottomissione?

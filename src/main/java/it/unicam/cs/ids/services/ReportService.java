@@ -3,6 +3,9 @@ package it.unicam.cs.ids.services;
 import it.unicam.cs.ids.dtos.requests.CreateReportDTO;
 import it.unicam.cs.ids.dtos.requests.UpdateReportDTO;
 import it.unicam.cs.ids.dtos.responses.ReportResponseDTO;
+import it.unicam.cs.ids.exceptions.InvalidInputException;
+import it.unicam.cs.ids.exceptions.ResourceNotFoundException;
+import it.unicam.cs.ids.exceptions.RuleViolationException;
 import it.unicam.cs.ids.exceptions.UnauthorizedActionException;
 import it.unicam.cs.ids.models.Hackathon;
 import it.unicam.cs.ids.models.Report;
@@ -40,7 +43,7 @@ public class ReportService implements IReportService {
         Hackathon hackathon = unitOfWork.getHackathonRepository().findById(request.hackathonId()).orElse(null);
 
         if (hackathon == null) {
-            throw new IllegalArgumentException("Hackathon not found");
+            throw new ResourceNotFoundException("Hackathon not found");
         }
 
         // Controllo se il mentore è assegnato a questo hackathon
@@ -74,7 +77,7 @@ public class ReportService implements IReportService {
     public List<ReportResponseDTO> getReportsForHackathon(Long hackathonId, Long organizerId) {
 
         Hackathon hackathon = unitOfWork.getHackathonRepository().findById(hackathonId).orElse(null);
-        if (hackathon == null) throw new IllegalArgumentException("Hackathon non trovato");
+        if (hackathon == null) throw new ResourceNotFoundException("Hackathon non trovato");
 
         // Solo l'organizzatore dell'hackathon può vedere i report
         if (!hackathon.getOrganizer().getId().equals(organizerId)) {
@@ -92,18 +95,18 @@ public class ReportService implements IReportService {
     public ReportResponseDTO respondToReport(UpdateReportDTO request, Long organizerId) {
 
         Report report = unitOfWork.getReportRepository().findById(request.reportId()).orElse(null);
-        if (report == null) throw new IllegalArgumentException("Segnalazione non trovata");
+        if (report == null) throw new ResourceNotFoundException("Segnalazione non trovata");
 
         if (!report.getHackathon().getOrganizer().getId().equals(organizerId)) {
             throw new UnauthorizedActionException("Solo l'organizzatore può aggiornare lo stato di questa segnalazione.");
         }
 
         if (request.decisionNote() == null || request.decisionNote().isEmpty()) {
-            throw new IllegalArgumentException("La decisione deve essere specificata prima di aggiornare lo stato della segnalazione.");
+            throw new InvalidInputException("La decisione deve essere specificata prima di aggiornare lo stato della segnalazione.");
         }
 
         if (report.getStatus() != ReportStatus.PENDING) {
-            throw new IllegalStateException("La segnalazione è già stata gestita");
+            throw new RuleViolationException("La segnalazione è già stata gestita");
         }
 
         report.setDecisionNote(request.decisionNote());
