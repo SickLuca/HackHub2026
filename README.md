@@ -34,14 +34,14 @@ Prima di iniziare, assicurati di avere installato:
 
 ### 1. Clonare il repository
 
-bash
+
 git clone https://github.com/SickLuca/HackHub2026.git
-cd HackHub2026
+
 
 
 ### 2. Verificare la versione di Java
 
-bash
+
 java -version
 
 
@@ -53,13 +53,13 @@ Assicurati che l'output mostri la versione *21* o superiore.
 
 ### Su Windows
 
-bash
+
 .\gradlew.bat bootRun
 
 
 ### Su macOS / Linux
 
-bash
+
 ./gradlew bootRun
 
 
