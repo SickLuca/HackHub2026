@@ -13,10 +13,7 @@ Il sistema consente a organizzatori, mentori e partecipanti di gestire l'intero 
 - [Avvio dell'applicazione](#-avvio-dellapplicazione)
 - [Stack Tecnologico](#-stack-tecnologico)
 - [Architettura del Progetto](#-architettura-del-progetto)
-- [Design Pattern Utilizzati](#-design-pattern-utilizzati)
 - [Documentazione API (Swagger)](#-documentazione-api-swagger)
-- [Console Database H2](#-console-database-h2)
-- [Testing](#-testing)
 
 ---
 
@@ -122,87 +119,76 @@ Una volta avviata, l'applicazione sarà accessibile su:
 
 Il progetto segue un'architettura *a strati (layered architecture)* tipica delle applicazioni Spring Boot:
 
-
+```text
 src/main/java/it/unicam/cs/ids/
 │
 ├── Main.java                      # Entry point dell'applicazione
 │
 ├── config/                        # Configurazione dell'applicazione
-│   ├── DatabaseSeeder.java        #   Popola il DB con dati di esempio all'avvio
-│   └── OpenApiConfig.java         #   Configurazione Swagger/OpenAPI con JWT
+│   ├── DatabaseSeeder.java        # Popola il DB con dati di esempio all'avvio
+│   └── OpenApiConfig.java         # Configurazione Swagger/OpenAPI con JWT
 │
 ├── controllers/                   # Layer di presentazione (REST API)
-│   ├── AuthController.java        #   Registrazione e login
-│   ├── HackathonController.java   #   CRUD e gestione hackathon
-│   ├── InvitationController.java  #   Gestione inviti ai team
-│   ├── ReportController.java      #   Segnalazioni e report
-│   ├── SubmissionController.java  #   Invio e valutazione submission
-│   ├── SupportRequestController.java  #   Richieste di supporto
-│   └── TeamController.java        #   Gestione team
+│   ├── AuthController.java        # Registrazione e login
+│   ├── HackathonController.java   # CRUD e gestione hackathon
+│   ├── InvitationController.java  # Gestione inviti ai team
+│   ├── ReportController.java       # Segnalazioni e report
+│   ├── SubmissionController.java   # Invio e valutazione submission
+│   ├── SupportRequestController.java # Richieste di supporto
+│   └── TeamController.java        # Gestione team
 │
 ├── dtos/                          # Data Transfer Objects
-│   ├── requests/                  #   DTO per le richieste in ingresso (17 DTO)
-│   └── responses/                 #   DTO per le risposte in uscita (8 DTO)
+│   ├── requests/                  # DTO per le richieste in ingresso (17 DTO)
+│   └── responses/                 # DTO per le risposte in uscita (8 DTO)
 │
 ├── exceptions/                    # Gestione centralizzata degli errori
-│   ├── GlobalExceptionHandler.java    #   Handler globale (@RestControllerAdvice)
-│   ├── ApiErrorResponseDTO.java       #   Formato standard delle risposte di errore
-│   ├── ResourceNotFoundException.java #   404 - Risorsa non trovata
-│   ├── RuleViolationException.java    #   409 - Violazione regola di business
-│   ├── InvalidInputException.java     #   400 - Input non valido
-│   └── UnauthorizedActionException.java   #   401 - Azione non autorizzata
+│   ├── GlobalExceptionHandler.java    # Handler globale (@RestControllerAdvice)
+│   ├── ApiErrorResponseDTO.java       # Formato standard delle risposte di errore
+│   ├── ResourceNotFoundException.java # 404 - Risorsa non trovata
+│   ├── RuleViolationException.java    # 409 - Violazione regola di business
+│   ├── InvalidInputException.java     # 400 - Input non valido
+│   └── UnauthorizedActionException.java # 401 - Azione non autorizzata
 │
 ├── models/                        # Entità JPA (dominio)
-│   ├── abstractions/              #   Classe astratta User
-│   ├── utils/                     #   Enum (ruoli, stati, metodi di pagamento)
-│   ├── DefaultUser.java           #   Utente standard (partecipante)
-│   ├── StaffUser.java             #   Utente staff (organizzatore/mentor)
-│   ├── Hackathon.java             #   Entità hackathon
-│   ├── Team.java                  #   Entità team
-│   ├── Submission.java            #   Entità submission
-│   ├── Invitation.java            #   Entità invito
-│   ├── Report.java                #   Entità report/segnalazione
-│   └── SupportRequest.java        #   Entità richiesta di supporto
+│   ├── abstractions/              # Classe astratta User
+│   ├── utils/                     # Enum (ruoli, stati, metodi di pagamento)
+│   ├── DefaultUser.java           # Utente standard (partecipante)
+│   ├── StaffUser.java             # Utente staff (organizzatore/mentor)
+│   ├── Hackathon.java             # Entità hackathon
+│   ├── Team.java                  # Entità team
+│   ├── Submission.java            # Entità submission
+│   ├── Invitation.java            # Entità invito
+│   ├── Report.java                # Entità report/segnalazione
+│   └── SupportRequest.java        # Entità richiesta di supporto
 │
 ├── repositories/                  # Layer di accesso ai dati (Spring Data JPA)
-│   └── I*Repository.java         #   9 interfacce repository (una per entità)
+│   └── I*Repository.java          # 9 interfacce repository (una per entità)
 │
 ├── security/                      # Configurazione sicurezza e JWT
-│   ├── SecurityConfig.java        #   Configurazione filtri e permessi HTTP
-│   ├── JwtAuthenticationFilter.java   #   Filtro per validazione token JWT
-│   ├── JwtService.java            #   Generazione e parsing token JWT
-│   ├── CustomUserDetails.java     #   Implementazione UserDetails di Spring Security
-│   ├── CustomUserDetailsService.java  #   Caricamento utente dal DB per autenticazione
-│   └── SecurityUtils.java         #   Utility per accedere all'utente autenticato
+│   ├── SecurityConfig.java        # Configurazione filtri e permessi HTTP
+│   ├── JwtAuthenticationFilter.java # Filtro per validazione token JWT
+│   ├── JwtService.java            # Generazione e parsing token JWT
+│   ├── CustomUserDetails.java     # Implementazione UserDetails di Spring Security
+│   ├── CustomUserDetailsService.java # Caricamento utente dal DB per autenticazione
+│   └── SecurityUtils.java         # Utility per accedere all'utente autenticato
 │
 ├── services/                      # Layer di business logic
-│   ├── abstractions/              #   Interfacce dei servizi (contratti)
-│   ├── AuthenticationService.java #   Logica di registrazione/login
-│   ├── HackathonService.java      #   Logica gestione hackathon
-│   ├── InvitationService.java     #   Logica gestione inviti
-│   ├── ReportService.java         #   Logica gestione report
-│   ├── SubmissionService.java     #   Logica gestione submission
-│   ├── SupportRequestService.java #   Logica richieste di supporto
-│   └── TeamService.java           #   Logica gestione team
+│   ├── abstractions/              # Interfacce dei servizi (contratti)
+│   ├── AuthenticationService.java # Logica di registrazione/login
+│   ├── HackathonService.java      # Logica gestione hackathon
+│   ├── InvitationService.java     # Logica gestione inviti
+│   ├── ReportService.java         # Logica gestione report
+│   ├── SubmissionService.java     # Logica gestione submission
+│   ├── SupportRequestService.java # Logica richieste di supporto
+│   └── TeamService.java           # Logica gestione team
 │
 └── utils/                         # Design pattern e utility
-    ├── adapter/                   #   Pattern Adapter (integrazione calendari)
-    ├── builder/                   #   Pattern Builder (creazione hackathon)
-    ├── strategy/                  #   Pattern Strategy (metodi di pagamento)
-    ├── scheduler/                 #   Schedulatori automatici
-    └── unitOfWork/                #   Pattern Unit of Work (transazioni)
+    ├── adapter/                   # Pattern Adapter (integrazione calendari)
+    ├── builder/                   # Pattern Builder (creazione hackathon)
+    ├── strategy/                  # Pattern Strategy (metodi di pagamento)
+    ├── scheduler/                 # Schedulatori automatici
+    └── unitOfWork/                # Pattern Unit of Work (transazioni)
 
-
----
-
-## 🎨 Design Pattern Utilizzati
-
-| Pattern | Package | Descrizione |
-|---|---|---|
-| *Adapter* | utils/adapter/ | Adatta API di calendari esterni (Google Calendar, Calendly) a un'interfaccia comune ICalendarService, permettendo al SupportRequestService di essere indipendente dal provider specifico. |
-| *Builder* | utils/builder/ | Semplifica la creazione di oggetti Hackathon complessi tramite un'interfaccia fluida (HackathonBuilder → ConcreteHackathonBuilder). |
-| *Strategy* | utils/strategy/ | Incapsula diversi metodi di pagamento (Carta di credito, PayPal, Bonifico bancario) dietro l'interfaccia IPaymentStrategy, selezionabili a runtime tramite il PaymentProcessor. |
-| *Unit of Work* | utils/unitOfWork/ | Centralizza l'accesso a tutti i repository in un unico punto (IUnitOfWork → UnitOfWork), garantendo coerenza transazionale e riducendo le dipendenze nei servizi. |
 
 ---
 
@@ -225,41 +211,3 @@ Le API sono protette da *JWT*. Per effettuare chiamate autenticate:
 5. Ora tutte le chiamate includeranno automaticamente l'header di autenticazione
 
 ---
-
-## 🗄️ Console Database H2
-
-Per ispezionare il database in-memory durante l'esecuzione:
-
-
-http://localhost:8080/h2-console
-
-
-| Campo | Valore |
-|---|---|
-| *JDBC URL* | jdbc:h2:mem:hackhubdb |
-| *Username* | sa |
-| *Password* | (vuoto) |
-
-> ⚠️ Il database è *in-memory*: tutti i dati vengono ricreati ad ogni avvio grazie al DatabaseSeeder.
-
----
-
-## 🧪 Testing
-
-Per eseguire i test:
-
-bash
-# Windows
-.\gradlew.bat test
-
-# macOS / Linux
-./gradlew test
-
-
-I test utilizzano *JUnit 5* e *Mockito*, inclusi automaticamente da spring-boot-starter-test.
-
----
-
-## 📄 Licenza
-
-Progetto universitario — Corso di Ingegneria del Software (IDS) 2025/2026, Università di Camerino.
