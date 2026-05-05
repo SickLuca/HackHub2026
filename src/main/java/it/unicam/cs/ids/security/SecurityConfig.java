@@ -38,30 +38,33 @@ public class SecurityConfig {
         this.userDetailsService = userDetailsService;
     }
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-                .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(auth -> auth
-                        // Rotte pubbliche (Visitatore)
-                        .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/hackathon/getPublicInfo").permitAll()
+@Bean
+public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    http
+            .securityMatcher("/**")
+            .csrf(AbstractHttpConfigurer::disable)
+            .authorizeHttpRequests(auth -> auth
+                    // Rotte pubbliche (Visitatore)
+                    .requestMatchers("/api/auth/**").permitAll()
+                    .requestMatchers("/api/hackathon/getPublicInfo").permitAll()
 
-                        // Rotte per Swagger e H2 Console (utili in sviluppo)
-                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                        .requestMatchers("/h2-console/**").permitAll()
+                    // Rotte per Swagger e H2 Console (utili in sviluppo)
+                    .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                    .requestMatchers("/h2-console", "/h2-console/**", "/h2-console/").permitAll()
+                    // Tutto il resto richiede l'autenticazione
+                    .anyRequest().authenticated()
+            )
+            .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authenticationProvider(authenticationProvider())
+            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+            .headers(headers -> headers
+                    .frameOptions(frame -> frame.disable())
+                    .httpStrictTransportSecurity(hsts -> hsts.disable())
+            );
 
-                        // Tutto il resto richiede l'autenticazione
-                        .anyRequest().authenticated()
-                )
-                .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authenticationProvider(authenticationProvider())
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
-                // Necessario per far funzionare la console H2 dentro un iframe
-                .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable));
+    return http.build();
+}
 
-        return http.build();
-    }
 
     @Bean
     public AuthenticationProvider authenticationProvider() {

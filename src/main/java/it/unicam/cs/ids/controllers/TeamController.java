@@ -71,7 +71,7 @@ public class TeamController {
      *
      * @return {@link TeamResponseDTO} con i dettagli del team corrente
      */
-    @GetMapping
+    @GetMapping("/getMyTeam")
     @PreAuthorize("hasAnyRole('USER_NO_TEAM', 'TEAM_MEMBER', 'TEAM_LEADER')")
     public ResponseEntity<TeamResponseDTO> getMyTeam() {
         Long userId = SecurityUtils.getAuthenticatedUserId();
