@@ -212,3 +212,19 @@ The APIs are protected by *JWT*. To make authenticated calls:
 5. All subsequent calls will automatically include the authentication header
 
 ---
+
+## 🗄️ H2 Database Console
+
+While the application is running, you can access the interactive H2 database console to view the current state of the database, inspect tables, and run SQL queries.
+
+**Access URL:** [http://localhost:8080/h2-console](http://localhost:8080/h2-console)
+
+To log in, please ensure the fields match the following credentials:
+
+* **Saved Settings:** Generic H2 (Embedded)
+* **Driver Class:** `org.h2.Driver`
+* **JDBC URL:** `jdbc:h2:mem:hackhubdb`
+* **User Name:** `sa`
+* **Password:** *(leave blank)*
+
+Click the **Connect** button to access the database interface.
