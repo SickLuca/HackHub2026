@@ -5,11 +5,11 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
 public record UpdateReportDTO (
-        @NotNull(message = "L'ID della segnalazione è obbligatorio")
-        @Positive(message = "L'ID deve essere un numero positivo valido")
+        @NotNull(message = "The report ID is required")
+        @Positive(message = "The ID must be a valid positive number")
         Long reportId,
 
-        @NotBlank(message = "Devi specificare la decisione per la segnalazione")
+        @NotBlank(message = "You must specify the decision for the report")
         String decisionNote
 ){
 }

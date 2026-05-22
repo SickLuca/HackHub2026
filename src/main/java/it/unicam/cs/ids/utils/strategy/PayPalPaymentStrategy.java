@@ -36,7 +36,7 @@ public class PayPalPaymentStrategy implements IPaymentStrategy {
 
         Team team = unitOfWork.getTeamRepository().findById(request.teamId()).orElse(null);
         if (team == null) {
-            throw new IllegalArgumentException("Team non trovato");
+            throw new IllegalArgumentException("Team not found");
         }
 
         team.setBalance(team.getBalance() + request.amount());

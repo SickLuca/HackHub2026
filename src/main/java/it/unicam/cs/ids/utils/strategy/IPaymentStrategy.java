@@ -4,16 +4,16 @@ import it.unicam.cs.ids.dtos.requests.PaymentRequestDTO;
 import it.unicam.cs.ids.models.utils.PaymentMethod;
 
 /**
- * Interfaccia base per l'implementazione del pattern Strategy relativo ai pagamenti.
+ * Base interface for implementing the Strategy pattern related to payments.
  * <p>
- * Definisce un contratto standard (metodo {@code pay}) permettendo l'aggiunta
- * di diverse modalità di pagamento in modo flessibile.
+ * Defines a standard contract (the {@code pay} method) allowing the addition
+ * of different payment methods in a flexible way.
  * </p>
  */
 public interface IPaymentStrategy {
-    // Esegue il pagamento
+    // Executes the payment
     boolean pay(PaymentRequestDTO request);
 
-    // Metodo utile per far capire a Spring quale strategia stiamo usando
+    // Useful to let Spring know which strategy is being used
     PaymentMethod getPaymentMethod();
 }

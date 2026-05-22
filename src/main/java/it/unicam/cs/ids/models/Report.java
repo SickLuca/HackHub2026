@@ -9,11 +9,11 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 
 /**
- * Entità che rappresenta una segnalazione (report) creata da un mentore.
+ * Entity representing a report created by a mentor.
  * <p>
- * Utilizzata per segnalare violazioni del regolamento da parte di un team
- * durante un hackathon. Contiene lo stato della segnalazione e le eventuali
- * note di decisione prese dall'organizzatore.
+ * Used to flag regulation violations by a team
+ * during a hackathon. Contains the report status and any
+ * decision notes made by the organizer.
  * </p>
  */
 @Entity
@@ -27,22 +27,22 @@ public class Report {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Il mentore che effettua la segnalazione
+    // The mentor who created the report
     @ManyToOne
     @JoinColumn(name = "mentor_id", nullable = false)
     private StaffUser mentor;
 
-    // Il team che ha commesso la violazione
+    // The team that committed the violation
     @ManyToOne
     @JoinColumn(name = "team_id", nullable = false)
     private Team team;
 
-    // L'hackathon in cui è avvenuta
+    // The hackathon in which it occurred
     @ManyToOne
     @JoinColumn(name = "hackathon_id", nullable = false)
     private Hackathon hackathon;
 
-    // Descrizione della violazione
+    // Description of the violation
     @Column(columnDefinition = "TEXT", nullable = false)
     private String description;
 

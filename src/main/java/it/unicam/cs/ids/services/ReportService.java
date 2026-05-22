@@ -22,12 +22,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Servizio per la gestione dei report/segnalazioni di violazioni.
+ * Service for managing reports/violation flagging.
  * <p>
- * Consente ai mentori di segnalare eventuali comportamenti scorretti
- * o violazioni del regolamento da parte dei team. Fornisce inoltre
- * agli organizzatori i metodi per esaminare tali report e intraprendere
- * azioni disciplinari.
+ * Allows mentors to report any misconduct
+ * or rule violations by teams. Also provides
+ * organizers with methods to review such reports and take
+ * disciplinary actions.
  * </p>
  */
 @Service
@@ -44,9 +44,9 @@ public class ReportService implements IReportService {
     @Override
     public ReportResponseDTO createReport(CreateReportDTO request, Long mentorId) {
 
-        // EXTRAIAMO L'ID DIRETTAMENTE DAL TOKEN JWT!
+        // EXTRACT THE ID DIRECTLY FROM THE JWT TOKEN!
 
-        // 2. Recupero entità (già sicure grazie al validatore)
+        // 2. Retrieve entities (already safe thanks to the validator)
         StaffUser mentor = unitOfWork.getStaffUserRepository().findById(mentorId).orElse(null);
         Team team = unitOfWork.getTeamRepository().findById(request.teamId()).orElse(null);
         Hackathon hackathon = unitOfWork.getHackathonRepository().findById(request.hackathonId()).orElse(null);
@@ -55,14 +55,14 @@ public class ReportService implements IReportService {
             throw new ResourceNotFoundException("Hackathon not found");
         }
 
-        // Controllo se il mentore è assegnato a questo hackathon
+        // Check whether the mentor is assigned to this hackathon
         boolean isMentorAssigned = hackathon.getMentors().stream()
                 .anyMatch(m -> m.getId().equals(mentorId));
         if (!isMentorAssigned) {
-            throw new UnauthorizedActionException("Il mentore non è assegnato a questo hackathon e non può effettuare segnalazioni.");
+            throw new UnauthorizedActionException("The mentor is not assigned to this hackathon and cannot submit reports.");
         }
 
-        // 3. Creazione entità
+        // 3. Create the entity
         Report report = new Report();
         report.setMentor(mentor);
         report.setTeam(team);
@@ -72,13 +72,13 @@ public class ReportService implements IReportService {
         report.setCreatedAt(LocalDateTime.now());
         report.setDecisionNote("N/D");
 
-        // 4. Salvataggio
+        // 4. Save
         unitOfWork.getReportRepository().save(report);
 
-        //aggiorno la relazione bidirezionale in memoria
-        hackathon.getReports().add(report); //dovremmo scrivere un add su hackathon?
+        //update the bidirectional relationship in memory
+        hackathon.getReports().add(report); //should we write an add method on hackathon?
 
-        // 5. Ritorno DTO
+        // 5. Return DTO
         return mapToDTO(report);
     }
 
@@ -86,11 +86,11 @@ public class ReportService implements IReportService {
     public List<ReportResponseDTO> getReportsForHackathon(Long hackathonId, Long organizerId) {
 
         Hackathon hackathon = unitOfWork.getHackathonRepository().findById(hackathonId).orElse(null);
-        if (hackathon == null) throw new ResourceNotFoundException("Hackathon non trovato");
+        if (hackathon == null) throw new ResourceNotFoundException("Hackathon not found");
 
-        // Solo l'organizzatore dell'hackathon può vedere i report
+        // Only the organizer of the hackathon can view the reports
         if (!hackathon.getOrganizer().getId().equals(organizerId)) {
-            throw new UnauthorizedActionException("Solo l'organizzatore può visualizzare le segnalazioni di questo hackathon.");
+            throw new UnauthorizedActionException("Only the organizer can view the reports of this hackathon.");
         }
 
         List<Report> reports = unitOfWork.getReportRepository().findByHackathonId(hackathonId);
@@ -104,18 +104,18 @@ public class ReportService implements IReportService {
     public ReportResponseDTO respondToReport(UpdateReportDTO request, Long organizerId) {
 
         Report report = unitOfWork.getReportRepository().findById(request.reportId()).orElse(null);
-        if (report == null) throw new ResourceNotFoundException("Segnalazione non trovata");
+        if (report == null) throw new ResourceNotFoundException("Report not found");
 
         if (!report.getHackathon().getOrganizer().getId().equals(organizerId)) {
-            throw new UnauthorizedActionException("Solo l'organizzatore può aggiornare lo stato di questa segnalazione.");
+            throw new UnauthorizedActionException("Only the organizer can update the status of this report.");
         }
 
         if (request.decisionNote() == null || request.decisionNote().isEmpty()) {
-            throw new InvalidInputException("La decisione deve essere specificata prima di aggiornare lo stato della segnalazione.");
+            throw new InvalidInputException("A decision note must be specified before updating the report status.");
         }
 
         if (report.getStatus() != ReportStatus.PENDING) {
-            throw new RuleViolationException("La segnalazione è già stata gestita");
+            throw new RuleViolationException("The report has already been handled");
         }
 
         report.setDecisionNote(request.decisionNote());

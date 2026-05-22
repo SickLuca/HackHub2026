@@ -3,13 +3,13 @@ package it.unicam.cs.ids.dtos.requests;
 import jakarta.validation.constraints.NotBlank;
 
 public record RegisterRequestDTO(
-        @NotBlank(message = "Devi inserire un nome")
+        @NotBlank(message = "You must provide a name")
         String name,
-        @NotBlank(message = "Devi inserire un cognome")
+        @NotBlank(message = "You must provide a surname")
         String surname,
-        @NotBlank(message = "Devi inserire un email")
+        @NotBlank(message = "You must provide an email")
         String email,
-        @NotBlank(message = "Devi inserire una password")
+        @NotBlank(message = "You must provide a password")
         String password) {
 
 }

@@ -16,10 +16,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * Controller REST per la gestione dei team.
+ * REST controller for team management.
  * <p>
- * Fornisce endpoint per la creazione di team, l'iscrizione a hackathon,
- * la visualizzazione del proprio team e l'abbandono del team.
+ * Provides endpoints for creating teams, registering for hackathons,
+ * viewing the current user's team, and leaving a team.
  * </p>
  */
 @RestController
@@ -33,11 +33,11 @@ public class TeamController {
     }
 
     /**
-     * Crea un nuovo team con l'utente autenticato come team leader.
-     * <p>Accessibile solo agli utenti con ruolo {@code USER_NO_TEAM}.</p>
+     * Creates a new team with the authenticated user as team leader.
+     * <p>Accessible only to users with the {@code USER_NO_TEAM} role.</p>
      *
-     * @param request DTO contenente il nome del team
-     * @return {@link TeamResponseDTO} con i dettagli del team appena creato
+     * @param request DTO containing the team name
+     * @return {@link TeamResponseDTO} with the details of the newly created team
      */
     @PostMapping("/create")
     @PreAuthorize("hasRole('USER_NO_TEAM')")
@@ -49,12 +49,12 @@ public class TeamController {
     }
 
     /**
-     * Iscrive il team del leader a un hackathon.
-     * <p>Accessibile solo agli utenti con ruolo {@code TEAM_LEADER}.
-     * L'hackathon deve essere aperto alle iscrizioni.</p>
+     * Registers the leader's team for a hackathon.
+     * <p>Accessible only to users with the {@code TEAM_LEADER} role.
+     * The hackathon must be open for registration.</p>
      *
-     * @param request DTO contenente l'ID dell'hackathon a cui iscriversi
-     * @return {@link TeamResponseDTO} aggiornato con l'hackathon associato
+     * @param request DTO containing the ID of the hackathon to register for
+     * @return updated {@link TeamResponseDTO} with the associated hackathon
      */
     @PostMapping("/subscribe")
     @PreAuthorize("hasRole('TEAM_LEADER')")
@@ -66,10 +66,10 @@ public class TeamController {
     }
 
     /**
-     * Restituisce le informazioni del team dell'utente autenticato.
-     * <p>Accessibile agli utenti con ruolo {@code USER_NO_TEAM}, {@code TEAM_MEMBER} o {@code TEAM_LEADER}.</p>
+     * Returns the information of the authenticated user's team.
+     * <p>Accessible to users with the {@code USER_NO_TEAM}, {@code TEAM_MEMBER}, or {@code TEAM_LEADER} role.</p>
      *
-     * @return {@link TeamResponseDTO} con i dettagli del team corrente
+     * @return {@link TeamResponseDTO} with the current team details
      */
     @GetMapping("/getMyTeam")
     @PreAuthorize("hasAnyRole('USER_NO_TEAM', 'TEAM_MEMBER', 'TEAM_LEADER')")
@@ -81,11 +81,11 @@ public class TeamController {
     }
 
     /**
-     * Permette all'utente autenticato di abbandonare il proprio team.
-     * <p>Accessibile agli utenti con ruolo {@code TEAM_MEMBER} o {@code TEAM_LEADER}.
-     * Se il leader abbandona, il team potrebbe essere sciolto.</p>
+     * Allows the authenticated user to leave their current team.
+     * <p>Accessible to users with the {@code TEAM_MEMBER} or {@code TEAM_LEADER} role.
+     * If the leader leaves, the team may be disbanded.</p>
      *
-     * @return messaggio di conferma dell'abbandono
+     * @return a confirmation message
      */
     @PostMapping("/leave")
     @PreAuthorize("hasAnyRole('TEAM_MEMBER', 'TEAM_LEADER')")
@@ -94,6 +94,6 @@ public class TeamController {
 
         teamService.leaveTeam(userId);
 
-        return ResponseEntity.ok("Hai abbandonato il team con successo.");
+        return ResponseEntity.ok("You have successfully left the team.");
     }
 }

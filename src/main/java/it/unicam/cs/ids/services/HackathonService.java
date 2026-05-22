@@ -26,12 +26,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Servizio per la gestione del ciclo di vita degli Hackathon.
+ * Service for managing the lifecycle of Hackathons.
  * <p>
- * Implementa la logica di business per la creazione di nuovi hackathon
- * (utilizzando il pattern Builder), la consultazione degli eventi attivi,
- * l'assegnazione di mentori da parte degli organizzatori e la proclamazione
- * del team vincitore al termine della competizione.
+ * Implements the business logic for creating new hackathons
+ * (using the Builder pattern), querying active events,
+ * assigning mentors by organizers, and announcing
+ * the winning team at the end of the competition.
  * </p>
  */
 @Service
@@ -49,7 +49,7 @@ public class HackathonService implements IHackathonService {
 
     @Override
     public HackathonResponseDTO addHackathon(CreateHackathonDTO request, Long organizerId) {
-        // 1. Recupero l'Organizzatore.
+        // 1. Retrieve the Organizer.
         StaffUser organizer = unitOfWork.getStaffUserRepository().findById(organizerId).orElse(null);
         if (organizer == null) {
             throw new ResourceNotFoundException("Organizer not found in the system");
@@ -58,7 +58,7 @@ public class HackathonService implements IHackathonService {
             throw new UnauthorizedActionException("Only organizers can create hackathons.");
         }
 
-        // 2. Recupero il Giudice dal DB usando l'ID passato nel DTO
+        // 2. Retrieve the Judge from the DB using the ID passed in the DTO
         StaffUser judge = unitOfWork.getStaffUserRepository().findById(request.judgeId()).orElse(null);
         if (judge == null) {
             throw new ResourceNotFoundException("Judge not found in the system.");
@@ -67,7 +67,7 @@ public class HackathonService implements IHackathonService {
         if(request.mentorsIdS().isEmpty()){
             throw new InvalidInputException("At least one mentor is required.");
         }
-        // 3. Recupero i Mentori dal DB
+        // 3. Retrieve the Mentors from the DB
         List<StaffUser> mentors = new ArrayList<>();
         for (Long mentorId : request.mentorsIdS()) {
             StaffUser mentor = unitOfWork.getStaffUserRepository().findById(mentorId).orElse(null);
@@ -130,78 +130,78 @@ public class HackathonService implements IHackathonService {
     @Override
     public HackathonResponseDTO addMentorToHackathon(AddMentorDTO request, Long organizerId) {
 
-        // 1. Recupero l'Hackathon
+        // 1. Retrieve the Hackathon
         Hackathon hackathon = unitOfWork.getHackathonRepository().findById(request.hackathonId()).orElse(null);
         if (hackathon == null) {
-            throw new ResourceNotFoundException("Hackathon non trovato");
+            throw new ResourceNotFoundException("Hackathon not found");
         }
 
         if (hackathon.getStatus() == HackathonStatus.FINISHED || hackathon.getStatus() == HackathonStatus.UNDER_EVALUATION) {
-            throw new InvalidInputException("Non puoi più aggiungere mentori a questo hackathon");
+            throw new InvalidInputException("You can no longer add mentors to this hackathon");
         }
 
-        // 2. Controllo di sicurezza: chi fa la richiesta è davvero l'organizzatore di questo hackathon?
+        // 2. Security check: is the requester actually the organizer of this hackathon?
         if (!hackathon.getOrganizer().getId().equals(organizerId)){
-            throw new UnauthorizedActionException("Solo l'organizzatore può aggiungere mentori a questo hackathon");
+            throw new UnauthorizedActionException("Only the organizer can add mentors to this hackathon");
         }
 
-        // 3. Recupero il Mentore da aggiungere
+        // 3. Retrieve the Mentor to add
         StaffUser mentor = unitOfWork.getStaffUserRepository().findById(request.mentorId()).orElse(null);
         if (mentor == null) {
-            throw new ResourceNotFoundException("Mentore non trovato nel sistema");
+            throw new ResourceNotFoundException("Mentor not found in the system");
         }
 
-        // 4. Controllo duplicati: il mentore è già assegnato?
+        // 4. Duplicate check: is the mentor already assigned?
         boolean isAlreadyMentor = hackathon.getMentors().stream()
                 .anyMatch(m -> m.getId().equals(mentor.getId()));
 
         if (isAlreadyMentor) {
-            throw new InvalidInputException("Questo utente è già un mentore per questo hackathon");
+            throw new InvalidInputException("This user is already a mentor for this hackathon");
         }
 
-        // 5. Aggiunta e salvataggio
+        // 5. Add and save
         hackathon.getMentors().add(mentor);
         unitOfWork.getHackathonRepository().save(hackathon);
 
-        // 6. Ritorno il DTO aggiornato
+        // 6. Return the updated DTO
         return mapToDTO(hackathon);
     }
 
   @Override
     public HackathonResponseDTO proclaimWinner(ProclaimWinnerDTO request, Long organizerId) {
         Hackathon hackathon = unitOfWork.getHackathonRepository().findById(request.hackathonId())
-                .orElseThrow(() -> new ResourceNotFoundException("Hackathon non trovato"));
+                .orElseThrow(() -> new ResourceNotFoundException("Hackathon not found"));
 
-        // 1. Controllo di Sicurezza: Solo l'organizzatore di QUESTO hackathon può farlo
+        // 1. Security check: only the organizer of THIS hackathon can do this
         if (!hackathon.getOrganizer().getId().equals(organizerId)) {
-            throw new UnauthorizedActionException("Solo l'organizzatore assegnato può proclamare il vincitore.");
+            throw new UnauthorizedActionException("Only the organizer can proclaim a winner.");
         }
 
-        // 2. Controllo di Stato: L'hackathon deve essere in valutazione
+        // 2. Status check: the hackathon must be under evaluation
         if (hackathon.getStatus() != HackathonStatus.UNDER_EVALUATION) {
-            throw new RuleViolationException("Impossibile proclamare un vincitore: l'hackathon non è in fase di valutazione.");
+            throw new RuleViolationException("Cannot proclaim a winner: the hackathon is not in the evaluation phase.");
         }
 
         boolean allEvaluated = hackathon.getSubmissions().stream()
                 .allMatch(sub -> sub.getStatus() == SubmissionStatus.EVALUATED);
 
         if (!allEvaluated) {
-            throw new RuleViolationException("Attenzione: non tutte le sottomissioni sono state valutate dal Giudice.");
+            throw new RuleViolationException("Warning: not all submissions have been evaluated by the Judge.");
         }
 
-        // 4. Recupero del Team Vincitore e controllo validità
+        // 4. Retrieve the Winning Team and validate
         Team winner = unitOfWork.getTeamRepository().findById(request.winningTeamId())
-                .orElseThrow(() -> new ResourceNotFoundException("Team vincitore non trovato"));
+                .orElseThrow(() -> new ResourceNotFoundException("Winning team not found"));
 
         if (!hackathon.getTeams().contains(winner)) {
-            throw new ResourceNotFoundException("Il team selezionato non è iscritto a questo Hackathon.");
+            throw new ResourceNotFoundException("The selected team is not registered in this Hackathon.");
         }
 
-        // 5. Proclamazione e Chiusura
+        // 5. Proclaim and close
         hackathon.setWinner(winner);
         hackathon.setStatus(HackathonStatus.FINISHED);
 
-        // 6. Erogazione del premio con strategy pattern
+        // 6. Award the prize using the strategy pattern
         if (hackathon.getCashPrize() != null && hackathon.getCashPrize() > 0) {
             paymentProcessor.processPayment(request.paymentMethod(), winner.getId(), hackathon.getCashPrize());
         }

@@ -15,17 +15,17 @@ import java.util.Map;
 import java.util.function.Function;
 
 /**
- * Servizio per la gestione dei JSON Web Token (JWT).
+ * Service for managing JSON Web Tokens (JWT).
  * <p>
- * Fornisce metodi per la generazione di nuovi token, l'estrazione
- * delle informazioni (claims) in essi contenute (come l'email dell'utente)
- * e la verifica della loro validità e scadenza.
+ * Provides methods for generating new tokens, extracting
+ * the information (claims) they contain (such as the user's email),
+ * and verifying their validity and expiration.
  * </p>
  */
 @Service
 public class JwtService {
 
-    // Spring inietterà qui il valore letto dal file application.properties
+    // Spring will inject here the value read from the application.properties file
     @Value("${security.jwt.secret-key}")
     private String secretKey;
 
@@ -47,7 +47,7 @@ public class JwtService {
                 .setClaims(extraClaims)
                 .setSubject(userDetails.getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                // Il token scade dopo 24 ore
+                // The token expires after 24 hours
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24))
                 .signWith(getSignInKey(), SignatureAlgorithm.HS256)
                 .compact();

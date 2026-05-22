@@ -8,11 +8,11 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * Implementazione concreta del pattern Builder per l'entità {@link Hackathon}.
+ * Concrete implementation of the Builder pattern for the {@link Hackathon} entity.
  * <p>
- * Consente di configurare passo-passo gli attributi (es. titolo, date, premi, 
- * staff) e restituisce un oggetto Hackathon completamente inizializzato 
- * tramite il metodo {@code build()}.
+ * Allows configuring the attributes step by step (e.g. title, dates, prizes,
+ * staff) and returns a fully initialized Hackathon object
+ * through the {@code build()} method.
  * </p>
  */
 public class ConcreteHackathonBuilder implements HackathonBuilder {

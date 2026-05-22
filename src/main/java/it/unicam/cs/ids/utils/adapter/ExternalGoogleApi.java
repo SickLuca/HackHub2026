@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 /**
  * Simulates an external Google API service for scheduling Google Meet rooms.
  */
-@Component // Lo rendiamo un bean di Spring
+@Component // Registered as a Spring bean
 public class ExternalGoogleApi {
     
     /**
@@ -15,7 +15,7 @@ public class ExternalGoogleApi {
      * @param roomName the specific room or event name
      * @return a formatted Google Meet URL
      */
-    // Metodo proprietario di Google (nome diverso, logica diversa)
+    // Google's proprietary method (different name, different logic)
     public String scheduleGoogleMeet(String organizerEmail, String roomName) {
         return String.format("https://meet.google.com/%s-room-%s", organizerEmail, roomName);
     }

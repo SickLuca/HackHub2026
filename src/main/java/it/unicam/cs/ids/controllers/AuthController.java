@@ -9,10 +9,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * Controller REST per l'autenticazione degli utenti.
+ * REST controller for user authentication.
  * <p>
- * Espone gli endpoint pubblici per la registrazione di nuovi utenti
- * e il login con generazione di token JWT.
+ * Exposes public endpoints for registering new users
+ * and logging in with JWT token generation.
  * </p>
  */
 @RestController
@@ -26,10 +26,10 @@ public class AuthController {
     }
 
     /**
-     * Registra un nuovo utente nel sistema.
+     * Registers a new user in the system.
      *
-     * @param request DTO contenente i dati di registrazione (username, password, ruolo)
-     * @return {@link AuthResponseDTO} contenente il token JWT generato per l'utente appena registrato
+     * @param request DTO containing the registration data (username, password, role)
+     * @return {@link AuthResponseDTO} containing the JWT token generated for the newly registered user
      */
     @PostMapping("/register")
     public ResponseEntity<AuthResponseDTO> register(@Valid @RequestBody RegisterRequestDTO request) {
@@ -37,10 +37,10 @@ public class AuthController {
     }
 
     /**
-     * Autentica un utente esistente e restituisce un token JWT.
+     * Authenticates an existing user and returns a JWT token.
      *
-     * @param request DTO contenente le credenziali di accesso (username, password)
-     * @return {@link AuthResponseDTO} contenente il token JWT per le successive chiamate autenticate
+     * @param request DTO containing the login credentials (username, password)
+     * @return {@link AuthResponseDTO} containing the JWT token for subsequent authenticated requests
      */
     @PostMapping("/login")
     public ResponseEntity<AuthResponseDTO> authenticate(@Valid @RequestBody LoginRequestDTO request) {

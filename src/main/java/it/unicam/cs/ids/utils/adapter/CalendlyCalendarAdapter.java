@@ -4,16 +4,16 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
 /**
- * Adapter concreto per l'integrazione con Calendly.
+ * Concrete Adapter for Calendly integration.
  * <p>
- * Implementa {@link ICalendarService} traducendo i dati del dominio nel
- * formato supportato dall'{@link ExternalCalendlyApi}.
- * È contrassegnato con {@link Primary} per indicare a Spring di utilizzarlo
- * come implementazione di default per l'interfaccia.
+ * Implements {@link ICalendarService} by translating domain data into the
+ * format supported by the {@link ExternalCalendlyApi}.
+ * It is annotated with {@link Primary} to instruct Spring to use it
+ * as the default implementation for the interface.
  * </p>
  */
 @Service
-@Primary // Dice a Spring che questo è l'Adapter di default da usare
+@Primary // Tells Spring that this is the default Adapter to use
 public class CalendlyCalendarAdapter implements ICalendarService {
 
     private final ExternalCalendlyApi calendlyApi;
@@ -24,7 +24,7 @@ public class CalendlyCalendarAdapter implements ICalendarService {
 
     @Override
     public String generateMeetingLink(String mentorName, String teamName) {
-        // L'adapter traduce i dati per renderli compatibili con l'API esterna
+        // The adapter translates the data to make it compatible with the external API
         String userSlug = mentorName.trim().replaceAll("\\s+", "").toLowerCase();
         String eventName = "support-call-" + teamName.trim().replaceAll("\\s+", "-").toLowerCase();
 

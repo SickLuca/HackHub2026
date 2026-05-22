@@ -4,8 +4,8 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
 public record SubscribeTeamDTO(
-        @NotNull(message = "Devi scegliere un hackathon")
-        @Positive(message = "L'id del hackathon deve essere positivo")
+        @NotNull(message = "You must choose a hackathon")
+        @Positive(message = "The hackathon ID must be positive")
         Long hackathonId
 ) {
 }

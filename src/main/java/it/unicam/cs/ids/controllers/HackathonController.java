@@ -16,11 +16,11 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * Controller REST per la gestione degli hackathon.
+ * REST controller for hackathon management.
  * <p>
- * Fornisce endpoint per la creazione, la consultazione,
- * l'assegnazione di mentori e la proclamazione del vincitore di un hackathon.
- * Le operazioni di scrittura sono riservate agli utenti con ruolo {@code ORGANIZER}.
+ * Provides endpoints for creating, querying,
+ * assigning mentors, and proclaiming the winner of a hackathon.
+ * Write operations are reserved to users with the {@code ORGANIZER} role.
  * </p>
  */
 @RestController
@@ -34,11 +34,11 @@ public class HackathonController {
     }
 
     /**
-     * Crea un nuovo hackathon.
-     * <p>Accessibile solo agli utenti con ruolo {@code ORGANIZER}.</p>
+     * Creates a new hackathon.
+     * <p>Accessible only to users with the {@code ORGANIZER} role.</p>
      *
-     * @param request DTO con i dati dell'hackathon da creare (titolo, descrizione, date, ecc.)
-     * @return {@link HackathonResponseDTO} con i dettagli dell'hackathon appena creato
+     * @param request DTO with the hackathon data (title, description, dates, etc.)
+     * @return {@link HackathonResponseDTO} with the details of the newly created hackathon
      */
     @PostMapping("/create")
     @PreAuthorize("hasRole('ORGANIZER')")
@@ -49,10 +49,10 @@ public class HackathonController {
     }
 
     /**
-     * Restituisce la lista completa di tutti gli hackathon presenti nel sistema.
-     * <p>Accessibile a qualsiasi utente autenticato.</p>
+     * Returns the complete list of all hackathons in the system.
+     * <p>Accessible to any authenticated user.</p>
      *
-     * @return lista di {@link HackathonResponseDTO} con i dettagli completi di ogni hackathon
+     * @return list of {@link HackathonResponseDTO} with full details of each hackathon
      */
     @GetMapping("/getAll")
     @PreAuthorize("isAuthenticated()")
@@ -62,12 +62,12 @@ public class HackathonController {
     }
 
     /**
-     * Aggiunge un mentore a un hackathon esistente.
-     * <p>Accessibile solo agli utenti con ruolo {@code ORGANIZER}.
-     * L'organizzatore deve essere il proprietario dell'hackathon.</p>
+     * Adds a mentor to an existing hackathon.
+     * <p>Accessible only to users with the {@code ORGANIZER} role.
+     * The organizer must be the owner of the hackathon.</p>
      *
-     * @param request DTO contenente l'ID dell'hackathon e l'ID del mentore da aggiungere
-     * @return {@link HackathonResponseDTO} aggiornato con il nuovo mentore
+     * @param request DTO containing the hackathon ID and the mentor ID to add
+     * @return updated {@link HackathonResponseDTO} with the new mentor
      */
     @PostMapping("/addMentors")
     @PreAuthorize("hasRole('ORGANIZER')")
@@ -78,12 +78,12 @@ public class HackathonController {
     }
     
     /**
-     * Proclama il vincitore di un hackathon.
-     * <p>Accessibile solo agli utenti con ruolo {@code ORGANIZER}.
-     * L'hackathon deve essere nello stato appropriato per la proclamazione.</p>
+     * Proclaims the winner of a hackathon.
+     * <p>Accessible only to users with the {@code ORGANIZER} role.
+     * The hackathon must be in the appropriate state for proclamation.</p>
      *
-     * @param request DTO contenente l'ID dell'hackathon e l'ID del team vincitore
-     * @return {@link HackathonResponseDTO} aggiornato con il vincitore proclamato
+     * @param request DTO containing the hackathon ID and the winning team ID
+     * @return updated {@link HackathonResponseDTO} with the proclaimed winner
      */
     @PostMapping("/proclaimWinner")
     @PreAuthorize("hasRole('ORGANIZER')")
@@ -96,11 +96,11 @@ public class HackathonController {
     }
 
     /**
-     * Restituisce le informazioni pubbliche di tutti gli hackathon.
-     * <p>Espone un sottoinsieme ridotto di dati, adatto alla visualizzazione
-     * in contesti dove non servono i dettagli completi (es. homepage).</p>
+     * Returns public information for all hackathons.
+     * <p>Exposes a reduced subset of data, suitable for display
+     * in contexts where full details are not required (e.g. homepage).</p>
      *
-     * @return lista di {@link HackathonPublicResponseDTO} con le informazioni pubbliche
+     * @return list of {@link HackathonPublicResponseDTO} with public information
      */
     @GetMapping("/getPublicInfo")
     @PreAuthorize("isAuthenticated()")

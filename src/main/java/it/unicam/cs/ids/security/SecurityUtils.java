@@ -3,17 +3,17 @@ package it.unicam.cs.ids.security;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 /**
- * Classe di utilità per interagire con il contesto di sicurezza.
+ * Utility class for interacting with the security context.
  * <p>
- * Fornisce metodi helper per accedere rapidamente alle informazioni
- * sull'utente attualmente autenticato senza dover interrogare esplicitamente
- * il {@link SecurityContextHolder} in ogni servizio o controller.
+ * Provides helper methods to quickly access information
+ * about the currently authenticated user without having to query
+ * the {@link SecurityContextHolder} explicitly in every service or controller.
  * </p>
  */
 public class SecurityUtils {
 
     /**
-     * Estrae l'ID dell'utente attualmente autenticato dal contesto di Spring Security.
+     * Extracts the ID of the currently authenticated user from the Spring Security context.
      * @return Long id
      */
     public static Long getAuthenticatedUserId() {
@@ -23,6 +23,6 @@ public class SecurityUtils {
             return customUserDetails.getUser().getId();
         }
 
-        throw new SecurityException("Utente non autenticato o token non valido");
+        throw new SecurityException("User not authenticated or invalid token");
     }
 }

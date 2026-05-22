@@ -6,14 +6,14 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
 public record CreateSubmissionDTO(
-        @NotNull(message = "L'ID dell'hackathon è obbligatorio")
-        @Positive(message = "L'ID  deve essere un numero positivo valido")
+        @NotNull(message = "The hackathon ID is required")
+        @Positive(message = "The ID must be a valid positive number")
         Long hackathonId,
 
-        @NotBlank(message = "Devi inserire un url per la sottomissione")
+        @NotBlank(message = "You must provide a URL for the submission")
         String projectUrl,
 
-        @NotBlank(message = "Devi inserire una descrizione per la sottomissione")
+        @NotBlank(message = "You must provide a description for the submission")
         String description
 ) {
 }

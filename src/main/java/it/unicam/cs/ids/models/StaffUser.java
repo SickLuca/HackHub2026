@@ -12,11 +12,11 @@ import lombok.Setter;
 
 
 /**
- * Entità che rappresenta un utente dello staff organizzativo.
+ * Entity representing an organizational staff user.
  * <p>
- * Estende l'entità astratta {@link User} e modella ruoli specifici come
- * {@code ORGANIZER}, {@code MENTOR} e {@code JUDGE}. Tali ruoli hanno
- * permessi elevati all'interno della piattaforma.
+ * Extends the abstract {@link User} entity and models specific roles such as
+ * {@code ORGANIZER}, {@code MENTOR}, and {@code JUDGE}. These roles have
+ * elevated permissions within the platform.
  * </p>
  */
 @Entity

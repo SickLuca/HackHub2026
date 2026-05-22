@@ -10,11 +10,11 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- * Componente responsabile della risoluzione ed esecuzione della corretta strategia di pagamento.
+ * Component responsible for resolving and executing the correct payment strategy.
  * <p>
- * Tramite iniezione delle dipendenze, raccoglie tutte le implementazioni
- * di {@link IPaymentStrategy} in una Map e vi delega le richieste
- * di pagamento (es. iscrizione team a pagamento) a runtime.
+ * Through dependency injection, collects all implementations
+ * of {@link IPaymentStrategy} into a Map and delegates
+ * payment requests (e.g. paid team registration) to them at runtime.
  * </p>
  */
 @Service
@@ -27,21 +27,21 @@ public class PaymentProcessor {
                 .collect(Collectors.toMap(IPaymentStrategy::getPaymentMethod, Function.identity()));
     }
 
-    // Modifichiamo i parametri per accettare esattamente i dati necessari
+    // Adjust the parameters to accept exactly the required data
     public void processPayment(PaymentMethod method, Long teamId, Double amount) {
         IPaymentStrategy strategy = strategies.get(method);
 
         if (strategy == null) {
-            throw new IllegalArgumentException("Metodo di pagamento non supportato: " + method);
+            throw new IllegalArgumentException("Unsupported payment method: " + method);
         }
 
-        // Creiamo il DTO richiesto dall'interfaccia IPaymentStrategy
+        // Create the DTO required by the IPaymentStrategy interface
         PaymentRequestDTO paymentRequest = new PaymentRequestDTO(teamId, amount);
 
         boolean success = strategy.pay(paymentRequest);
 
         if (!success) {
-            throw new IllegalStateException("Il pagamento tramite " + method + " è fallito.");
+            throw new IllegalStateException("Payment via " + method + " failed.");
         }
     }
 }

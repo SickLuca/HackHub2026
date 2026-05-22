@@ -1,6 +1,6 @@
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '4.0.1' //Versione corretta?
+    id 'org.springframework.boot' version '4.0.1'
     id 'io.spring.dependency-management' version '1.1.7'
 }
 
@@ -15,14 +15,14 @@ dependencies {
     // --- Spring Boot Starters ---
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-    // Opzionale ma consigliato per la validazione dei DTO (sostituirà il tuo custom Validator)
+    // Optional but recommended for DTO validation
     //implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0'
-    //Validazioni semantiche
+    //Semantic validations
     implementation 'org.springframework.boot:spring-boot-starter-validation'
 
     // --- Database H2 ---
-    implementation 'com.h2database:h2' // La versione la decide Spring Boot in automatico
+    implementation 'com.h2database:h2' // The version is decided automatically by Spring Boot
 
     // --- Spring Security & JWT ---
     implementation 'org.springframework.boot:spring-boot-starter-security'
@@ -37,7 +37,7 @@ dependencies {
     testAnnotationProcessor 'org.projectlombok:lombok'
 
     // --- Testing ---
-    testImplementation 'org.springframework.boot:spring-boot-starter-test' // Include già JUnit e Mockito!
+    testImplementation 'org.springframework.boot:spring-boot-starter-test' // Include JUnit and Mockito
 }
 
 test {

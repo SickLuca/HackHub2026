@@ -23,12 +23,12 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Servizio per la gestione delle submission (consegne dei progetti).
+ * Service for managing submissions (project deliveries).
  * <p>
- * Contiene la logica per permettere ai team di presentare i propri progetti
- * entro la scadenza stabilita (deadline). Permette anche l'aggiornamento
- * delle submission e la valutazione da parte dei giudici (assegnazione
- * di un punteggio e di un feedback).
+ * Contains the logic to allow teams to submit their projects
+ * before the established deadline. Also allows updating
+ * submissions and evaluation by judges (assigning
+ * a score and feedback).
  * </p>
  */
 @Service
@@ -44,38 +44,38 @@ public class SubmissionService implements ISubmissionService {
 
     @Override
     public SubmissionResponseDTO addSubmission(CreateSubmissionDTO request, Long userId) {
-        // 1. Recupero Utente e Team in modo sicuro!
+        // 1. Retrieve User and Team safely!
         DefaultUser user = unitOfWork.getDefaultUserRepository().findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Utente non trovato"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         Team team = user.getTeam();
         if (team == null) {
-            throw new RuleViolationException("Devi appartenere a un team per poter sottomettere un progetto.");
+            throw new RuleViolationException("You must belong to a team in order to submit a project.");
         }
 
         Hackathon hackathon = unitOfWork.getHackathonRepository().findById(request.hackathonId()).orElse(null);
         if (hackathon == null) throw new ResourceNotFoundException("Hackathon not found.");
 
-        // Controllo 1: Il team è iscritto a QUESTO hackathon?
+        // Check 1: Is the team registered for THIS hackathon?
         if (team.getSubscribedHackathon() == null || !team.getSubscribedHackathon().getId().equals(hackathon.getId())) {
             throw new RuleViolationException("The team is not subscribed to this Hackathon.");
         }
 
-        // Controllo 2: La scadenza per le consegne è passata?
-        // È importante verificare la data di scadenza esatta come da specifiche
+        // Check 2: Has the submission deadline passed?
+        // It is important to verify the exact deadline as per the specifications
         if (LocalDateTime.now().isAfter(hackathon.getSubmitDeadline())) {
             throw new RuleViolationException("The submission deadline has already passed.");
         }
 
-        // Cerchiamo se esiste già una sottomissione.
-        // Se la lista è null, creiamo uno stream vuoto al volo.
+        // Check whether an existing submission already exists.
+        // If the list is null, create an empty stream on the fly.
         Optional<Submission> sub = (team.getSubmissions() == null) ? Optional.empty() :
                 team.getSubmissions().stream()
                         .filter(s -> s.getHackathon().getId().equals(hackathon.getId()))
                         .findFirst();
 
         if (sub.isEmpty()) {
-            // Se non esiste, creiamo una nuova sottomissione
+            // If it doesn't exist, create a new submission
             Submission newSubmission = new Submission();
             newSubmission.setTeam(team);
             newSubmission.setHackathon(hackathon);
@@ -87,20 +87,20 @@ public class SubmissionService implements ISubmissionService {
             newSubmission.setJudgeFeedback("");
 
 
-            // 1. Salviamo nel database per generare l'ID
+            // 1. Save to the database to generate the ID
             Submission savedSubmission = unitOfWork.getSubmissionRepository().save(newSubmission);
 
-            // 2. SINCRONIZZAZIONE DELLA RELAZIONE BIDIREZIONALE!
-            // Aggiorniamo la lista in memoria del Team, altrimenti alla
-            // prossima chiamata il team sembrerà non avere sottomissioni.
+            // 2. BIDIRECTIONAL RELATIONSHIP SYNC!
+            // Update the in-memory list of the Team, otherwise on the
+            // next call the team would appear to have no submissions.
             team.getSubmissions().add(savedSubmission);
             hackathon.getSubmissions().add(savedSubmission);
 
             return mapToDTO(savedSubmission);
         } else {
-            //TODO: oppure mappiamo la richiesta di creazione ad un update e ritorniamo l'update :)
+            //TODO: or we could map the creation request to an update and return the update :)
 
-            // Se esiste, informiamo che una sottomissione è già presente e che è possibile modificarla
+            // If it exists, inform that a submission is already present and can be modified
             throw new RuleViolationException("A submission for this Hackathon already exists.");
         }
     }
@@ -117,7 +117,7 @@ public class SubmissionService implements ISubmissionService {
 
         DefaultUser user = unitOfWork.getDefaultUserRepository().findById(userId).orElseThrow();
         if (user.getTeam() == null || !submission.getTeam().getId().equals(user.getTeam().getId())) {
-            throw new UnauthorizedActionException("Non puoi modificare una sottomissione che non appartiene al tuo team.");
+            throw new UnauthorizedActionException("You cannot modify a submission that does not belong to your team.");
         }
 
         submission.setProjectUrl(request.projectUrl());
@@ -130,29 +130,29 @@ public class SubmissionService implements ISubmissionService {
 
     @Override
     public SubmissionResponseDTO evaluateSubmission(EvaluateSubmissionDTO request, Long judgeId) {
-        // 1. Recupero la sottomissione
+        // 1. Retrieve the submission
         Submission submission = unitOfWork.getSubmissionRepository().findById(request.submissionId()).orElse(null);
         if (submission == null) {
-            throw new ResourceNotFoundException("Sottomissione non trovata");
+            throw new ResourceNotFoundException("Submission not found");
         }
 
         Hackathon hackathon = submission.getHackathon();
 
-        // 2. Controllo di sicurezza: chi valuta è davvero il giudice di questo Hackathon?
+        // 2. Security check: is the evaluator actually the judge of this Hackathon?
         if (!hackathon.getJudge().getId().equals(judgeId)) {
-            throw new UnauthorizedActionException("Non sei il giudice assegnato a questo Hackathon");
+            throw new UnauthorizedActionException("You are not the judge assigned to this Hackathon");
         }
 
         if (hackathon.getStatus() != HackathonStatus.UNDER_EVALUATION) {
-            throw new RuleViolationException("L'hackathon non è attualmente in fase di valutazione");
+            throw new RuleViolationException("The hackathon is not currently in the evaluation phase");
         }
 
-        //Solo closed perchè non puoi gestirla se aperta o valutata
+        //Only closed because you cannot manage it if open or already evaluated
         if (submission.getStatus() != SubmissionStatus.CLOSED ) {
-            throw new RuleViolationException("Non puoi gestire questa sottomissione");
+            throw new RuleViolationException("You cannot manage this submission");
         }
 
-        // 5. Aggiornamento dell'entità
+        // 5. Update the entity
         submission.setScore(request.score());
         submission.setJudgeFeedback(request.feedback());
         submission.setStatus(SubmissionStatus.EVALUATED);
@@ -165,12 +165,12 @@ public class SubmissionService implements ISubmissionService {
     public List<SubmissionResponseDTO> getSubmissionsByHackathon(Long hackathonId, Long staffId) {
         Hackathon hackathon = unitOfWork.getHackathonRepository().findById(hackathonId).orElse(null);
         if (hackathon == null) {
-            throw new ResourceNotFoundException("Hackathon non trovato.");
+            throw new ResourceNotFoundException("Hackathon not found.");
         }
 
-        // Controllo Sicurezza: lo staff fa parte di questo hackathon?
+        // Security check: is the staff member part of this hackathon?
         if (!isStaffAssignedToHackathon(hackathon, staffId)) {
-            throw new UnauthorizedActionException("Non sei autorizzato a visualizzare le sottomissioni di questo hackathon.");
+            throw new UnauthorizedActionException("You are not authorized to view the submissions of this hackathon.");
         }
 
         List<Submission> submissions = unitOfWork.getSubmissionRepository().findByHackathonId(hackathonId);
@@ -184,26 +184,26 @@ public class SubmissionService implements ISubmissionService {
     public SubmissionResponseDTO getSubmissionDetails(Long submissionId, Long staffId) {
         Submission submission = unitOfWork.getSubmissionRepository().findById(submissionId).orElse(null);
         if (submission == null) {
-            throw new ResourceNotFoundException("Sottomissione non trovata.");
+            throw new ResourceNotFoundException("Submission not found.");
         }
 
-        // Controllo Sicurezza: lo staff fa parte dell'hackathon a cui appartiene questa sottomissione?
+        // Security check: is the staff member part of the hackathon this submission belongs to?
         if (!isStaffAssignedToHackathon(submission.getHackathon(), staffId)) {
-            throw new UnauthorizedActionException("Non sei autorizzato a visualizzare i dettagli di questa sottomissione.");
+            throw new UnauthorizedActionException("You are not authorized to view the details of this submission.");
         }
 
         return mapToDTO(submission);
     }
 
-    // Metodo helper privato per centralizzare il controllo degli accessi
+    // Private helper method to centralize access control
     private boolean isStaffAssignedToHackathon(Hackathon hackathon, Long staffId) {
-        // È l'organizzatore?
+        // Is it the organizer?
         if (hackathon.getOrganizer().getId().equals(staffId)) return true;
 
-        // È il giudice?
+        // Is it the judge?
         if (hackathon.getJudge().getId().equals(staffId)) return true;
 
-        // È uno dei mentori?
+        // Is it one of the mentors?
         return hackathon.getMentors().stream().anyMatch(m -> m.getId().equals(staffId));
     }
 

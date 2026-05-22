@@ -8,7 +8,7 @@ import lombok.Setter;
 
 @Entity
 @Table(name = "users")
-@Inheritance(strategy = InheritanceType.JOINED) // Crea tabelle separate ma collegate
+@Inheritance(strategy = InheritanceType.JOINED) // Creates separate but linked tables
 @Getter
 @Setter
 @NoArgsConstructor

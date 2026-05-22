@@ -9,10 +9,10 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 
 /**
- * Entità che rappresenta la consegna di un progetto (submission) da parte di un team.
+ * Entity representing a team's project delivery (submission).
  * <p>
- * Contiene i dettagli del progetto presentato, come l'URL del repository o della demo,
- * la descrizione, e i risultati della valutazione (punteggio e feedback del giudice).
+ * Contains the details of the submitted project, such as the repository or demo URL,
+ * the description, and the evaluation results (score and judge feedback).
  * </p>
  */
 @Entity

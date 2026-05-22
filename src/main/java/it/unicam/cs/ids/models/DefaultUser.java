@@ -11,11 +11,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Entità che rappresenta un utente partecipante all'hackathon.
+ * Entity representing a hackathon participant user.
  * <p>
- * Estende l'entità astratta {@link User} e contiene le informazioni
- * specifiche dei partecipanti, come il ruolo (es. {@code TEAM_LEADER}, 
- * {@code TEAM_MEMBER}), il team di appartenenza e gli inviti ricevuti.
+ * Extends the abstract {@link User} entity and contains information
+ * specific to participants, such as the role (e.g. {@code TEAM_LEADER},
+ * {@code TEAM_MEMBER}), the team they belong to, and received invitations.
  * </p>
  */
 @Entity

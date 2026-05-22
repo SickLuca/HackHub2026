@@ -9,10 +9,10 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 
 /**
- * Entità che rappresenta un invito inviato da un team a un utente.
+ * Entity representing an invitation sent from a team to a user.
  * <p>
- * Traccia l'utente invitato, il team mittente, lo stato dell'invito
- * (es. in attesa, accettato, rifiutato) e la data di creazione.
+ * Tracks the invited user, the sending team, the invitation status
+ * (e.g. pending, accepted, rejected), and the creation date.
  * </p>
  */
 @Entity

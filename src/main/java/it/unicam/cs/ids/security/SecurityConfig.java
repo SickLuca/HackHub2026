@@ -18,12 +18,12 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 /**
- * Classe di configurazione principale per Spring Security.
+ * Main configuration class for Spring Security.
  * <p>
- * Definisce le regole di accesso alle risorse (quali endpoint sono pubblici
- * e quali richiedono autenticazione), disabilita CSRF, imposta la gestione
- * delle sessioni su stateless e registra il filtro personalizzato {@link JwtAuthenticationFilter}.
- * Fornisce inoltre i bean necessari per l'autenticazione, come l'encoder delle password.
+ * Defines access rules for resources (which endpoints are public
+ * and which require authentication), disables CSRF, sets session management
+ * to stateless, and registers the custom {@link JwtAuthenticationFilter}.
+ * Also provides the beans required for authentication, such as the password encoder.
  * </p>
  */
 @Configuration
@@ -44,14 +44,14 @@ public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Excepti
             .securityMatcher("/**")
             .csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(auth -> auth
-                    // Rotte pubbliche (Visitatore)
+                    // Public routes (Visitor)
                     .requestMatchers("/api/auth/**").permitAll()
                     .requestMatchers("/api/hackathon/getPublicInfo").permitAll()
 
-                    // Rotte per Swagger e H2 Console (utili in sviluppo)
+                    // Routes for Swagger and H2 Console (useful during development)
                     .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                     .requestMatchers("/h2-console", "/h2-console/**", "/h2-console/").permitAll()
-                    // Tutto il resto richiede l'autenticazione
+                    // Everything else requires authentication
                     .anyRequest().authenticated()
             )
             .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -68,7 +68,7 @@ public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Excepti
 
     @Bean
     public AuthenticationProvider authenticationProvider() {
-        // Passiamo userDetailsService direttamente nel costruttore!
+        // We pass userDetailsService directly into the constructor!
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(userDetailsService);
         authProvider.setPasswordEncoder(passwordEncoder());
         return authProvider;
@@ -81,6 +81,6 @@ public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Excepti
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(); // Cripta le password nel database!
+        return new BCryptPasswordEncoder(); // Encrypts passwords stored in the database!
     }
 }

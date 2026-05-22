@@ -14,11 +14,11 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * Controller REST per la gestione degli inviti ai team.
+ * REST controller for managing team invitations.
  * <p>
- * Permette ai team leader di inviare inviti ad altri utenti,
- * agli utenti di visualizzare i propri inviti ricevuti
- * e di accettarli o rifiutarli.
+ * Allows team leaders to send invitations to other users,
+ * allows users to view their received invitations,
+ * and to accept or reject them.
  * </p>
  */
 @RestController
@@ -32,11 +32,11 @@ public class InvitationController {
     }
 
     /**
-     * Invia un invito a un utente per unirsi al team del mittente.
-     * <p>Accessibile solo agli utenti con ruolo {@code TEAM_LEADER}.</p>
+     * Sends an invitation to a user to join the sender's team.
+     * <p>Accessible only to users with the {@code TEAM_LEADER} role.</p>
      *
-     * @param request DTO contenente l'ID dell'utente da invitare e l'ID dell'hackathon di riferimento
-     * @return {@link InvitationResponseDTO} con i dettagli dell'invito creato
+     * @param request DTO containing the ID of the user to invite and the relevant hackathon ID
+     * @return {@link InvitationResponseDTO} with the details of the created invitation
      */
     @PostMapping("/send")
     @PreAuthorize("hasRole('TEAM_LEADER')")
@@ -48,10 +48,10 @@ public class InvitationController {
     }
 
     /**
-     * Restituisce tutti gli inviti ricevuti dall'utente autenticato.
-     * <p>Accessibile agli utenti con ruolo {@code USER_NO_TEAM}, {@code TEAM_MEMBER} o {@code TEAM_LEADER}.</p>
+     * Returns all invitations received by the authenticated user.
+     * <p>Accessible to users with the {@code USER_NO_TEAM}, {@code TEAM_MEMBER}, or {@code TEAM_LEADER} role.</p>
      *
-     * @return lista di {@link InvitationResponseDTO} con tutti gli inviti dell'utente corrente
+     * @return list of {@link InvitationResponseDTO} with all invitations for the current user
      */
     @GetMapping("/getAll")
     @PreAuthorize("hasAnyRole('USER_NO_TEAM', 'TEAM_MEMBER', 'TEAM_LEADER')")
@@ -63,12 +63,12 @@ public class InvitationController {
     }
 
     /**
-     * Risponde a un invito ricevuto, accettandolo o rifiutandolo.
-     * <p>Accessibile solo agli utenti con ruolo {@code USER_NO_TEAM}.
-     * Se accettato, l'utente verrà aggiunto al team che ha inviato l'invito.</p>
+     * Responds to a received invitation, accepting or rejecting it.
+     * <p>Accessible only to users with the {@code USER_NO_TEAM} role.
+     * If accepted, the user will be added to the team that sent the invitation.</p>
      *
-     * @param response DTO contenente l'ID dell'invito e la risposta (accettato/rifiutato)
-     * @return {@link InvitationResponseDTO} con lo stato aggiornato dell'invito
+     * @param response DTO containing the invitation ID and the response (accepted/rejected)
+     * @return {@link InvitationResponseDTO} with the updated invitation status
      */
     @PostMapping("/respond")
     @PreAuthorize("hasRole('USER_NO_TEAM')")

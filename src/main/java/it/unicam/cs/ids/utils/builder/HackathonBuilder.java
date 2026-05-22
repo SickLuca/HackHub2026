@@ -7,11 +7,11 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * Interfaccia Builder per la creazione di istanze di {@link Hackathon}.
+ * Builder interface for creating {@link Hackathon} instances.
  * <p>
- * Fornisce un'interfaccia fluida per impostare in modo incrementale
- * i vari parametri complessi di un hackathon, prima di invocarne 
- * la costruzione finale.
+ * Provides a fluent interface for incrementally setting
+ * the various complex parameters of a hackathon before invoking
+ * the final build step.
  * </p>
  */
 public interface HackathonBuilder {

@@ -5,14 +5,14 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
 public record UpdateSubmissionDTO(
-        @NotNull(message = "L'ID della sottomissione è obbligatorio")
-        @Positive(message = "L'ID deve essere un numero positivo valido")
+        @NotNull(message = "The submission ID is required")
+        @Positive(message = "The ID must be a valid positive number")
         Long submissionId,
 
-        @NotBlank(message = "Devi inserire un nuovo url per la sottomissione")
+        @NotBlank(message = "You must provide a new URL for the submission")
         String projectUrl,
 
-        @NotBlank(message = "Devi inserire una nuova descrizione per la sottomissione")
+        @NotBlank(message = "You must provide a new description for the submission")
         String description
 ) {
 }

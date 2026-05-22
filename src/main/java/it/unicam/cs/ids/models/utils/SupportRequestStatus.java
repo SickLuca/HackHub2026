@@ -1,7 +1,7 @@
 package it.unicam.cs.ids.models.utils;
 
 public enum SupportRequestStatus {
-    PENDING,           // Appena creata dal team
-    SCHEDULED,    // Quando un mentore la prende in carico o propone una call
-    CLOSED        // Quando la richiesta è stata soddisfatta
+    PENDING,           // Just created by the team
+    SCHEDULED,    // When a mentor takes it on or proposes a call
+    CLOSED        // When the request has been fulfilled
 }

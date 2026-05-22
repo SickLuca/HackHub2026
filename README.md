@@ -1,213 +1,214 @@
 # 🏆 HackHub2026
 
-*HackHub2026* è una piattaforma backend RESTful per la gestione completa di hackathon, sviluppata come progetto per il corso di *Ingegneria del Software (IDS)* presso l'*Università di Camerino (UNICAM)*.
+*HackHub2026* is a RESTful backend platform for comprehensive hackathon management, developed as a project for the *Software Engineering (IDS)* course at the *University of Camerino (UNICAM)*.
 
-Il sistema consente a organizzatori, mentori e partecipanti di gestire l'intero ciclo di vita di un hackathon: dalla creazione dell'evento alla proclamazione del vincitore, passando per la gestione dei team, delle submission, delle valutazioni, dei report e delle richieste di supporto.
-
----
-
-## 📋 Indice
-
-- [Prerequisiti](#-prerequisiti)
-- [Installazione](#-installazione)
-- [Avvio dell'applicazione](#-avvio-dellapplicazione)
-- [Stack Tecnologico](#-stack-tecnologico)
-- [Architettura del Progetto](#-architettura-del-progetto)
-- [Documentazione API (Swagger)](#-documentazione-api-swagger)
+The system allows organizers, mentors, and participants to manage the entire lifecycle of a hackathon: from event creation to winner announcement, including team management, submissions, evaluations, reports, and support requests.
 
 ---
 
-## ⚙️ Prerequisiti
+## 📋 Table of Contents
 
-Prima di iniziare, assicurati di avere installato:
+- [Prerequisites](#-prerequisites)
+- [Installation](#-installation)
+- [Running the Application](#-running-the-application)
+- [Technology Stack](#-technology-stack)
+- [Project Architecture](#-project-architecture)
+- [API Documentation (Swagger)](#-api-documentation-swagger)
 
-| Requisito | Versione minima | Note |
+---
+
+## ⚙️ Prerequisites
+
+Before you begin, make sure you have the following installed:
+
+| Requirement | Minimum Version | Notes |
 |---|---|---|
-| *Java JDK* | 21+ | Necessario per Spring Boot 4.x |
-| *Git* | qualsiasi | Per clonare il repository |
+| *Java JDK* | 21+ | Required for Spring Boot 4.x |
+| *Git* | any | To clone the repository |
 
-> *Nota:* Non è necessario installare Gradle. Il progetto include il *Gradle Wrapper* (gradlew / gradlew.bat) che scarica automaticamente la versione corretta (Gradle 9.2.0).
+
+> *Note:* There is no need to install Gradle. The project includes the *Gradle Wrapper* (gradlew / gradlew.bat) which automatically downloads the correct version (Gradle 9.2.0).
 
 ---
 
-## 📥 Installazione
+## 📥 Installation
 
-### 1. Clonare il repository
+### 1. Clone the repository
 
 
 git clone https://github.com/SickLuca/HackHub2026.git
 
 
 
-### 2. Verificare la versione di Java
+### 2. Verify the Java version
 
 
 java -version
 
 
-Assicurati che l'output mostri la versione *21* o superiore.
+Make sure the output shows version *21* or higher.
 
 ---
 
-## 🚀 Avvio dell'applicazione
+## 🚀 Running the Application
 
-### Su Windows
+### On Windows
 
 
 .\gradlew.bat bootRun
 
 
-### Su macOS / Linux
+### On macOS / Linux
 
 
 ./gradlew bootRun
 
 
-Una volta avviata, l'applicazione sarà accessibile su:
+Once started, the application will be accessible at:
 
-| Servizio | URL |
+| Service | URL |
 |---|---|
-| *Applicazione* | http://localhost:8080 |
+| *Application* | http://localhost:8080 |
 | *Swagger UI* | http://localhost:8080/swagger-ui/index.html |
 
 ---
 
-## 🛠️ Stack Tecnologico
+## 🛠️ Technology Stack
 
 ### Framework & Runtime
 
-| Tecnologia | Versione | Descrizione |
+| Technology | Version | Description |
 |---|---|---|
-| *Spring Boot* | 4.0.1 | Framework principale per la creazione di applicazioni Java enterprise-ready. Gestisce auto-configurazione, dependency injection (IoC) e server embedded (Tomcat). |
-| *Spring Web (MVC)* | — | Modulo per la costruzione di API REST tramite annotazioni (@RestController, @GetMapping, ecc.). |
-| *Spring Data JPA* | — | Astrae l'accesso al database tramite interfacce Repository, eliminando la necessità di scrivere query SQL manuali per le operazioni CRUD. |
-| *Spring Security* | — | Framework per l'autenticazione e l'autorizzazione. Nel progetto gestisce l'accesso tramite token JWT. |
-| *Spring Validation* | — | Fornisce annotazioni di validazione (@NotBlank, @Min, @Email, ecc.) per validare automaticamente i DTO in ingresso alle API. |
-| *Spring Scheduling* | — | Permette l'esecuzione di task pianificati (@Scheduled) per operazioni automatiche come la chiusura degli hackathon scaduti. |
-| *Gradle* | 9.2.0 | Build tool per la compilazione, gestione delle dipendenze e packaging del progetto. |
-| *Java* | 21+ | Linguaggio di programmazione e runtime. |
+| *Spring Boot* | 4.0.1 | Main framework for building enterprise-ready Java applications. Handles auto-configuration, dependency injection (IoC), and embedded server (Tomcat). |
+| *Spring Web (MVC)* | — | Module for building REST APIs via annotations (@RestController, @GetMapping, etc.). |
+| *Spring Data JPA* | — | Abstracts database access through Repository interfaces, eliminating the need to write manual SQL queries for CRUD operations. |
+| *Spring Security* | — | Framework for authentication and authorization. In this project it manages access via JWT tokens. |
+| *Spring Validation* | — | Provides validation annotations (@NotBlank, @Min, @Email, etc.) to automatically validate incoming DTOs at the API layer. |
+| *Spring Scheduling* | — | Enables the execution of scheduled tasks (@Scheduled) for automatic operations such as closing expired hackathons. |
+| *Gradle* | 9.2.0 | Build tool for compilation, dependency management, and project packaging. |
+| *Java* | 21+ | Programming language and runtime. |
 
 ### Database
 
-| Tecnologia | Descrizione |
+| Technology | Description |
 |---|---|
-| *H2 Database* | Database relazionale in-memory, ideale per sviluppo e testing. I dati vengono ricreati ad ogni avvio dell'applicazione tramite un DatabaseSeeder. |
-| *Hibernate (JPA)* | ORM (Object-Relational Mapping) che mappa le classi Java annotate con @Entity nelle tabelle del database. Configurato in modalità ddl-auto=update. |
+| *H2 Database* | In-memory relational database, ideal for development and testing. Data is recreated on every application startup via a DatabaseSeeder. |
+| *Hibernate (JPA)* | ORM (Object-Relational Mapping) that maps Java classes annotated with @Entity to database tables. Configured in ddl-auto=update mode. |
 
-### Sicurezza
+### Security
 
-| Tecnologia | Versione | Descrizione |
+| Technology | Version | Description |
 |---|---|---|
-| *JJWT (JSON Web Token)* | 0.11.5 | Libreria per la generazione, firma e validazione di token JWT. Utilizzata per l'autenticazione stateless delle API. Comprende i moduli jjwt-api, jjwt-impl e jjwt-jackson. |
+| *JJWT (JSON Web Token)* | 0.11.5 | Library for generating, signing, and validating JWT tokens. Used for stateless API authentication. Includes the jjwt-api, jjwt-impl, and jjwt-jackson modules. |
 
-### Librerie di Utilità
+### Utility Libraries
 
-| Tecnologia | Descrizione |
+| Technology | Description |
 |---|---|
-| *Lombok* | Libreria di code-generation a compile-time. Riduce il boilerplate generando automaticamente getter, setter, costruttori, equals, hashCode e toString tramite annotazioni come @Data, @Getter, @AllArgsConstructor, @Builder, ecc. |
-| *SpringDoc OpenAPI* (v2.7.0) | Genera automaticamente la documentazione OpenAPI 3.0 dalle annotazioni dei controller Spring e la espone tramite un'interfaccia web interattiva (Swagger UI). |
+| *Lombok* | Compile-time code-generation library. Reduces boilerplate by automatically generating getters, setters, constructors, equals, hashCode, and toString via annotations such as @Data, @Getter, @AllArgsConstructor, @Builder, etc. |
+| *SpringDoc OpenAPI* (v2.7.0) | Automatically generates OpenAPI 3.0 documentation from Spring controller annotations and exposes it through an interactive web interface (Swagger UI). |
 
 ### Testing
 
-| Tecnologia | Descrizione |
+| Technology | Description |
 |---|---|
-| *Spring Boot Starter Test* | Modulo che include tutte le dipendenze necessarie per il testing: *JUnit 5* (framework di test), *Mockito* (mocking), *AssertJ* (asserzioni fluide) e *Spring Test* (contesto di test per Spring). |
+| *Spring Boot Starter Test* | Module that includes all dependencies needed for testing: *JUnit 5* (test framework), *Mockito* (mocking), *AssertJ* (fluent assertions), and *Spring Test* (Spring test context). |
 
 ---
 
-## 🏗️ Architettura del Progetto
+## 🏗️ Project Architecture
 
-Il progetto segue un'architettura *a strati (layered architecture)* tipica delle applicazioni Spring Boot:
+The project follows a *layered architecture* typical of Spring Boot applications:
 
 ```text
 src/main/java/it/unicam/cs/ids/
 │
-├── Main.java                      # Entry point dell'applicazione
+├── Main.java                      # Application entry point
 │
-├── config/                        # Configurazione dell'applicazione
-│   ├── DatabaseSeeder.java        # Popola il DB con dati di esempio all'avvio
-│   └── OpenApiConfig.java         # Configurazione Swagger/OpenAPI con JWT
+├── config/                        # Application configuration
+│   ├── DatabaseSeeder.java        # Populates the DB with sample data on startup
+│   └── OpenApiConfig.java         # Swagger/OpenAPI configuration with JWT
 │
-├── controllers/                   # Layer di presentazione (REST API)
-│   ├── AuthController.java        # Registrazione e login
-│   ├── HackathonController.java   # CRUD e gestione hackathon
-│   ├── InvitationController.java  # Gestione inviti ai team
-│   ├── ReportController.java       # Segnalazioni e report
-│   ├── SubmissionController.java   # Invio e valutazione submission
-│   ├── SupportRequestController.java # Richieste di supporto
-│   └── TeamController.java        # Gestione team
+├── controllers/                   # Presentation layer (REST API)
+│   ├── AuthController.java        # Registration and login
+│   ├── HackathonController.java   # Hackathon CRUD and management
+│   ├── InvitationController.java  # Team invitation management
+│   ├── ReportController.java       # Reports and flagging
+│   ├── SubmissionController.java   # Submission upload and evaluation
+│   ├── SupportRequestController.java # Support requests
+│   └── TeamController.java        # Team management
 │
 ├── dtos/                          # Data Transfer Objects
-│   ├── requests/                  # DTO per le richieste in ingresso (17 DTO)
-│   └── responses/                 # DTO per le risposte in uscita (8 DTO)
+│   ├── requests/                  # DTOs for incoming requests (17 DTOs)
+│   └── responses/                 # DTOs for outgoing responses (8 DTOs)
 │
-├── exceptions/                    # Gestione centralizzata degli errori
-│   ├── GlobalExceptionHandler.java    # Handler globale (@RestControllerAdvice)
-│   ├── ApiErrorResponseDTO.java       # Formato standard delle risposte di errore
-│   ├── ResourceNotFoundException.java # 404 - Risorsa non trovata
-│   ├── RuleViolationException.java    # 409 - Violazione regola di business
-│   ├── InvalidInputException.java     # 400 - Input non valido
-│   └── UnauthorizedActionException.java # 401 - Azione non autorizzata
+├── exceptions/                    # Centralized error handling
+│   ├── GlobalExceptionHandler.java    # Global handler (@RestControllerAdvice)
+│   ├── ApiErrorResponseDTO.java       # Standard error response format
+│   ├── ResourceNotFoundException.java # 404 - Resource not found
+│   ├── RuleViolationException.java    # 409 - Business rule violation
+│   ├── InvalidInputException.java     # 400 - Invalid input
+│   └── UnauthorizedActionException.java # 401 - Unauthorized action
 │
-├── models/                        # Entità JPA (dominio)
-│   ├── abstractions/              # Classe astratta User
-│   ├── utils/                     # Enum (ruoli, stati, metodi di pagamento)
-│   ├── DefaultUser.java           # Utente standard (partecipante)
-│   ├── StaffUser.java             # Utente staff (organizzatore/mentor)
-│   ├── Hackathon.java             # Entità hackathon
-│   ├── Team.java                  # Entità team
-│   ├── Submission.java            # Entità submission
-│   ├── Invitation.java            # Entità invito
-│   ├── Report.java                # Entità report/segnalazione
-│   └── SupportRequest.java        # Entità richiesta di supporto
+├── models/                        # JPA entities (domain)
+│   ├── abstractions/              # Abstract User class
+│   ├── utils/                     # Enums (roles, states, payment methods)
+│   ├── DefaultUser.java           # Standard user (participant)
+│   ├── StaffUser.java             # Staff user (organizer/mentor)
+│   ├── Hackathon.java             # Hackathon entity
+│   ├── Team.java                  # Team entity
+│   ├── Submission.java            # Submission entity
+│   ├── Invitation.java            # Invitation entity
+│   ├── Report.java                # Report/flag entity
+│   └── SupportRequest.java        # Support request entity
 │
-├── repositories/                  # Layer di accesso ai dati (Spring Data JPA)
-│   └── I*Repository.java          # 9 interfacce repository (una per entità)
+├── repositories/                  # Data access layer (Spring Data JPA)
+│   └── I*Repository.java          # 9 repository interfaces (one per entity)
 │
-├── security/                      # Configurazione sicurezza e JWT
-│   ├── SecurityConfig.java        # Configurazione filtri e permessi HTTP
-│   ├── JwtAuthenticationFilter.java # Filtro per validazione token JWT
-│   ├── JwtService.java            # Generazione e parsing token JWT
-│   ├── CustomUserDetails.java     # Implementazione UserDetails di Spring Security
-│   ├── CustomUserDetailsService.java # Caricamento utente dal DB per autenticazione
-│   └── SecurityUtils.java         # Utility per accedere all'utente autenticato
+├── security/                      # Security configuration and JWT
+│   ├── SecurityConfig.java        # HTTP filter and permission configuration
+│   ├── JwtAuthenticationFilter.java # Filter for JWT token validation
+│   ├── JwtService.java            # JWT token generation and parsing
+│   ├── CustomUserDetails.java     # Spring Security UserDetails implementation
+│   ├── CustomUserDetailsService.java # Loads user from DB for authentication
+│   └── SecurityUtils.java         # Utility to access the authenticated user
 │
-├── services/                      # Layer di business logic
-│   ├── abstractions/              # Interfacce dei servizi (contratti)
-│   ├── AuthenticationService.java # Logica di registrazione/login
-│   ├── HackathonService.java      # Logica gestione hackathon
-│   ├── InvitationService.java     # Logica gestione inviti
-│   ├── ReportService.java         # Logica gestione report
-│   ├── SubmissionService.java     # Logica gestione submission
-│   ├── SupportRequestService.java # Logica richieste di supporto
-│   └── TeamService.java           # Logica gestione team
+├── services/                      # Business logic layer
+│   ├── abstractions/              # Service interfaces (contracts)
+│   ├── AuthenticationService.java # Registration/login logic
+│   ├── HackathonService.java      # Hackathon management logic
+│   ├── InvitationService.java     # Invitation management logic
+│   ├── ReportService.java         # Report management logic
+│   ├── SubmissionService.java     # Submission management logic
+│   ├── SupportRequestService.java # Support request logic
+│   └── TeamService.java           # Team management logic
 │
-└── utils/                         # Design pattern e utility
-    ├── adapter/                   # Pattern Adapter (integrazione calendari)
-    ├── builder/                   # Pattern Builder (creazione hackathon)
-    ├── strategy/                  # Pattern Strategy (metodi di pagamento)
-    ├── scheduler/                 # Schedulatori automatici
-    └── unitOfWork/                # Pattern Unit of Work (transazioni)
-
+└── utils/                         # Design patterns and utilities
+    ├── adapter/                   # Adapter Pattern (calendar integration)
+    ├── builder/                   # Builder Pattern (hackathon creation)
+    ├── strategy/                  # Strategy Pattern (payment methods)
+    ├── scheduler/                 # Automatic schedulers
+    └── unitOfWork/                # Unit of Work Pattern (transactions)
+```
 
 ---
 
-## 📖 Documentazione API (Swagger)
+## 📖 API Documentation (Swagger)
 
-Con l'applicazione in esecuzione, accedi alla documentazione interattiva delle API:
+With the application running, access the interactive API documentation at:
 
 
 http://localhost:8080/swagger-ui/index.html
 
 
-### Autenticazione su Swagger
+### Authentication on Swagger
 
-Le API sono protette da *JWT*. Per effettuare chiamate autenticate:
+The APIs are protected by *JWT*. To make authenticated calls:
 
-1. Chiama l'endpoint di *login* (/api/auth/login) con le credenziali
-2. Copia il token JWT dalla risposta
-3. Clicca il pulsante *"Authorize"* 🔓 in alto a destra su Swagger UI
-4. Inserisci il token nel formato: Bearer <il-tuo-token>
-5. Ora tutte le chiamate includeranno automaticamente l'header di autenticazione
+1. Call the *login* endpoint (/api/auth/login) with your credentials
+2. Copy the JWT token from the response
+3. Click the *"Authorize"* 🔓 button at the top right of the Swagger UI
+4. Enter the token in the format: Bearer <your-token>
+5. All subsequent calls will automatically include the authentication header
 
 ---

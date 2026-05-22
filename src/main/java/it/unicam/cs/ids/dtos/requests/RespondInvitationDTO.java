@@ -4,11 +4,11 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
 public record RespondInvitationDTO(
-        @NotNull(message = "L'ID dell'invito è obbligatorio")
-        @Positive(message = "L'ID dell'utente deve essere un numero positivo valido")
+        @NotNull(message = "The invitation ID is required")
+        @Positive(message = "The ID must be a valid positive number")
         Long invitationId,
 
-        @NotNull(message = "Devi specificare se accetti o rifiuti l'invito")
+        @NotNull(message = "You must specify whether you accept or reject the invitation")
         Boolean accept
 ) {
 }

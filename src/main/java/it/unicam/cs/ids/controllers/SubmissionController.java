@@ -18,10 +18,10 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * Controller REST per la gestione delle submission (consegne dei progetti).
+ * REST controller for managing submissions (project deliveries).
  * <p>
- * Gestisce l'intero ciclo di vita di una submission: dalla creazione,
- * all'aggiornamento, fino alla valutazione da parte dei giudici.
+ * Manages the entire lifecycle of a submission: from creation,
+ * to updating, through to evaluation by judges.
  * </p>
  */
 @RestController
@@ -36,10 +36,10 @@ public class SubmissionController {
     }
 
     /**
-     * Invia una nuova submission per un hackathon.
+     * Submits a new submission for a hackathon.
      *
-     * @param request DTO con i dati della submission
-     * @return {@link SubmissionResponseDTO} della submission creata
+     * @param request DTO with the submission data
+     * @return {@link SubmissionResponseDTO} for the created submission
      */
     @PostMapping("/submit")
     @PreAuthorize("hasAnyRole('TEAM_LEADER', 'TEAM_MEMBER')")
@@ -50,10 +50,10 @@ public class SubmissionController {
     }
 
     /**
-     * Aggiorna una submission esistente prima della scadenza.
+     * Updates an existing submission before the deadline.
      *
-     * @param request DTO con l'ID della submission e i campi da aggiornare
-     * @return {@link SubmissionResponseDTO} aggiornata
+     * @param request DTO with the submission ID and fields to update
+     * @return updated {@link SubmissionResponseDTO}
      */
     @PostMapping("/update")
     @PreAuthorize("hasAnyRole('TEAM_LEADER', 'TEAM_MEMBER')")
@@ -64,11 +64,11 @@ public class SubmissionController {
     }
 
     /**
-     * Valuta una submission assegnando punteggio e feedback.
-     * <p>Accessibile solo ai {@code JUDGE}.</p>
+     * Evaluates a submission by assigning a score and feedback.
+     * <p>Accessible only to {@code JUDGE} users.</p>
      *
-     * @param request DTO con l'ID della submission, il punteggio e il feedback
-     * @return {@link SubmissionResponseDTO} con la valutazione
+     * @param request DTO with the submission ID, the score, and the feedback
+     * @return {@link SubmissionResponseDTO} with the evaluation
      */
     @PostMapping("/evaluate")
     @PreAuthorize("hasRole('JUDGE')")
@@ -79,16 +79,16 @@ public class SubmissionController {
     }
 
     /**
-     * Restituisce i dettagli di una specifica submission.
+     * Returns the details of a specific submission.
      *
-     * @param submissionId l'ID della submission
-     * @return {@link SubmissionResponseDTO} con i dettagli completi
+     * @param submissionId the ID of the submission
+     * @return {@link SubmissionResponseDTO} with the full details
      */
     @GetMapping("/getSubmissionDetail")
     @PreAuthorize("hasAnyRole('ORGANIZER', 'JUDGE', 'MENTOR')")
     public ResponseEntity<SubmissionResponseDTO> getSubmissionDetails(@RequestParam
-                                                                          @NotNull(message = "L'id deve essere maggiore di 0")
-                                                                          @Positive(message = "L'id deve essere un numero positivo")
+                                                                          @NotNull(message = "The ID must be greater than 0")
+                                                                          @Positive(message = "The ID must be a positive number")
                                                                           Long submissionId) {
         Long staffId = SecurityUtils.getAuthenticatedUserId();
         SubmissionResponseDTO response = submissionService.getSubmissionDetails(submissionId, staffId);
@@ -96,16 +96,16 @@ public class SubmissionController {
     }
 
     /**
-     * Restituisce tutte le submission di un hackathon.
+     * Returns all submissions for a hackathon.
      *
-     * @param hackathonId l'ID dell'hackathon
-     * @return lista di {@link SubmissionResponseDTO}
+     * @param hackathonId the ID of the hackathon
+     * @return list of {@link SubmissionResponseDTO}
      */
     @GetMapping("/getAllByHackathon")
     @PreAuthorize("hasAnyRole('ORGANIZER', 'JUDGE', 'MENTOR')")
     public ResponseEntity<List<SubmissionResponseDTO>> getSubmissionsByHackathon(@RequestParam
-                                                                                     @NotNull(message = "L'id deve essere maggiore di 0")
-                                                                                     @Positive(message = "L'id deve essere un numero positivo")
+                                                                                     @NotNull(message = "The ID must be greater than 0")
+                                                                                     @Positive(message = "The ID must be a positive number")
                                                                                      Long hackathonId) {
         Long staffId = SecurityUtils.getAuthenticatedUserId();
         List<SubmissionResponseDTO> response = submissionService.getSubmissionsByHackathon(hackathonId, staffId);

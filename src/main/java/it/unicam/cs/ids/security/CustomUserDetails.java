@@ -12,11 +12,11 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Implementazione personalizzata di {@link UserDetails} di Spring Security.
+ * Custom implementation of Spring Security's {@link UserDetails}.
  * <p>
- * Funge da adapter (wrapper) attorno all'entità {@link User} del dominio,
- * fornendo a Spring Security le informazioni necessarie per l'autenticazione
- * e l'autorizzazione (es. credenziali, stato dell'account e ruoli/autorità).
+ * Acts as an adapter (wrapper) around the domain {@link User} entity,
+ * providing Spring Security with the information required for authentication
+ * and authorization (e.g., credentials, account status, and roles/authorities).
  * </p>
  */
 @Getter
@@ -30,7 +30,7 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        // Estraiamo il ruolo in base al tipo concreto di Utente
+        // Extract the role based on the concrete type of User
         String roleName = "ROLE_USER"; // Default fallback
 
         if (user instanceof StaffUser staff) {
@@ -49,7 +49,7 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public String getUsername() {
-        return user.getEmail(); // In Spring Security lo "username" è solitamente l'email
+        return user.getEmail(); // In Spring Security the "username" is typically the email
     }
 
     @Override

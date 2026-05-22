@@ -21,12 +21,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Servizio per la gestione degli inviti ai team.
+ * Service for managing team invitations.
  * <p>
- * Fornisce i metodi per l'invio di inviti da parte dei team leader
- * verso utenti senza team e permette a questi ultimi di consultare
- * gli inviti ricevuti e di accettarli o rifiutarli, aggiornando
- * di conseguenza i membri del team.
+ * Provides methods for team leaders to send invitations
+ * to users without a team, and allows those users to view
+ * their received invitations and accept or reject them,
+ * updating team membership accordingly.
  * </p>
  */
 @Service
@@ -43,32 +43,32 @@ public class InvitationService implements IInvitationService {
     public InvitationResponseDTO sendInvitation(CreateInvitationDTO request, Long fromTeamLeaderId) {
 
         DefaultUser inviter = unitOfWork.getDefaultUserRepository().findById(fromTeamLeaderId).orElse(null);
-        // Controllo validità ruolo e appartenenza al team
+        // Check role validity and team membership
         if (inviter.getRole() != UserRole.TEAM_LEADER) {
-            throw new RuleViolationException("Solo un Team Leader può invitare nuovi membri nel team.");
+            throw new RuleViolationException("Only a Team Leader can invite new members to the team.");
         }
 
         Team team = inviter.getTeam();
-        // Controllo capienza team in base all'hackathon (se iscritti)
+        // Check team capacity based on the hackathon (if registered)
         if (team.getSubscribedHackathon() != null) {
             if (team.getMembers().size() >= team.getSubscribedHackathon().getMaxDimensionOfTeam()) {
-                throw new RuleViolationException("Il team ha già raggiunto la dimensione massima per l'hackathon a cui è iscritto.");
+                throw new RuleViolationException("The team has already reached the maximum size for the hackathon it is registered in.");
             }
         }
 
         DefaultUser invitedUser = unitOfWork.getDefaultUserRepository().findById(request.toUserId()).orElse(null);
         if (invitedUser == null) {
-            throw new ResourceNotFoundException("Utente con id " + request.toUserId() + " non trovato");
+            throw new ResourceNotFoundException("User with id " + request.toUserId() + " not found");
         }
 
 
-        // Controllo stato dell'utente invitato
+        // Check the status of the invited user
         if (invitedUser.getRole() != UserRole.USER_NO_TEAM) {
-            throw new RuleViolationException("L'utente invitato appartiene già a un team.");
+            throw new RuleViolationException("The invited user already belongs to a team.");
         }
 
 
-        // Creazione dell'entità
+        // Create the entity
         Invitation invitation = new Invitation();
         invitation.setDescription(request.description());
         invitation.setFromTeam(team);
@@ -78,14 +78,14 @@ public class InvitationService implements IInvitationService {
 
         Invitation savedInvitation = unitOfWork.getInvitationRepository().save(invitation);
 
-        //Aggiornamento utente in memoria
+        //Update user in memory
         invitedUser.getInvitations().add(savedInvitation);
 
-        //Aggiornamento utente sul db (non dovrebbe essere necessario per via di JPA che dopo il setToUser dovrebbe aver aggiornato le relazioni
+        //Update user in the DB (should not be necessary as JPA should have updated the relations after setToUser)
         unitOfWork.getDefaultUserRepository().save(invitedUser);
 
 
-        //aggiorno relazione bidirezionale in memoria
+        //update bidirectional relationship in memory
         team.getInvitations().add(savedInvitation);
 
         return mapToDTO(savedInvitation);
@@ -111,39 +111,39 @@ public class InvitationService implements IInvitationService {
     public InvitationResponseDTO respondToInvitation(RespondInvitationDTO request, Long userId){
         Invitation invitation = unitOfWork.getInvitationRepository().findById(request.invitationId()).orElse(null);
         if (invitation == null) {
-            throw new ResourceNotFoundException("Invito non trovato.");
+            throw new ResourceNotFoundException("Invitation not found.");
         }
 
-        // 2. Verifico che l'invito sia ancora pendente
+        // 2. Verify the invitation is still pending
         if (invitation.getStatus() != InvitationStatus.PENDING) {
-            throw new RuleViolationException("Questo invito è già stato gestito (accettato o rifiutato).");
+            throw new RuleViolationException("This invitation has already been handled (accepted or rejected).");
         }
 
-        // 3. Verifico l'identità dell'utente
+        // 3. Verify the user's identity
         DefaultUser user = unitOfWork.getDefaultUserRepository().findById(invitation.getToUser().getId()).orElse(null);
         if (user == null || !invitation.getToUser().getId().equals(userId)) {
-            throw new ResourceNotFoundException("L'utente non è il destinatario di questo invito.");
+            throw new ResourceNotFoundException("The user is not the recipient of this invitation.");
         }
 
         if (request.accept()) {
-            // 4. Controlliamo di nuovo che l'utente non abbia già un team (magari ha accettato un altro invito 5 minuti fa)
+            // 4. Check again that the user doesn't already have a team (e.g. they accepted another invitation 5 minutes ago)
             if (user.getRole() != UserRole.USER_NO_TEAM) {
-                throw new RuleViolationException("Impossibile accettare: appartieni già a un team.");
+                throw new RuleViolationException("Cannot accept: you already belong to a team.");
             }
 
-            // 5. Controlliamo se il team è attualmente iscritto ad un hackathon
+            // 5. Check whether the team is currently registered for a hackathon
             Team team = invitation.getFromTeam();
             if (team.getSubscribedHackathon() != null) {
-                throw new RuleViolationException("Impossibile accettare: il team sta partecipando ad un hackathon");
+                throw new RuleViolationException("Cannot accept: the team is participating in a hackathon");
             }
 
             invitation.setStatus(InvitationStatus.ACCEPTED);
 
-            // Aggiorno l'utente
+            // Update the user
             user.setTeam(team);
-            user.setRole(UserRole.TEAM_MEMBER); // Da utente semplice diventa membro
+            user.setRole(UserRole.TEAM_MEMBER); // User becomes a team member
 
-            // Sincronizzo la relazione bidirezionale in memoria (il database verrebbe salvato comunque dal merge del team)
+            // Sync the bidirectional relationship in memory (the database would be saved anyway through the team merge)
             team.getMembers().add(user);
 
             unitOfWork.getTeamRepository().save(team);

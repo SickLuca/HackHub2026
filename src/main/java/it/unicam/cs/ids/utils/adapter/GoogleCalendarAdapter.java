@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
  * Adapter class that implements the {@link ICalendarService} interface
  * to interact with the external Google Calendar/Meet API.
  */
-@Service // Anche lui è un bean, ma senza @Primary Spring lo ignora a meno di richieste esplicite
+@Service // Also a bean, but without @Primary Spring will ignore it unless explicitly requested
 public class GoogleCalendarAdapter implements ICalendarService {
 
     private final ExternalGoogleApi googleApi;
@@ -30,7 +30,7 @@ public class GoogleCalendarAdapter implements ICalendarService {
      */
     @Override
     public String generateMeetingLink(String mentorName, String teamName) {
-        // Google Meet vuole formati diversi! L'Adapter gestisce questa differenza.
+        // Google Meet requires different formats! The Adapter handles this difference.
         String organizerEmail = mentorName.trim().toLowerCase() + "@hackhub.com";
         String roomName = teamName.trim().toLowerCase();
 

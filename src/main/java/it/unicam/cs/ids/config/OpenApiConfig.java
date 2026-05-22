@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Configuration;
 public class OpenApiConfig {
 
 
-    //Questo permette di dire a Swagger che le chiamate API richiedono un token Bearer. Altrimenti, quando si clicca "Try it out" su Swagger, si riceve un errore 403.
+    //This tells Swagger that API calls require a Bearer token. Otherwise, clicking "Try it out" in Swagger returns a 403 error.
     @Bean
     public OpenAPI customOpenAPI() {
         return new OpenAPI()
@@ -20,7 +20,7 @@ public class OpenApiConfig {
                         .title("HackHub API Documentation")
                         .version("1.0")
                         .description("API documentation for project: HackHub IDS 2026"))
-                // Aggiunge il pulsante "Authorize" nella UI
+                // Adds the "Authorize" button in the UI
                 .addSecurityItem(new SecurityRequirement().addList("bearerAuth"))
                 .components(new Components()
                         .addSecuritySchemes("bearerAuth",

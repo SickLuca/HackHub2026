@@ -17,10 +17,10 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * Controller REST per la gestione delle richieste di supporto.
+ * REST controller for managing support requests.
  * <p>
- * Permette ai membri dei team di creare richieste di aiuto
- * e ai mentori di visualizzarle e pianificare chiamate di supporto.
+ * Allows team members to create help requests
+ * and mentors to view and schedule support calls.
  * </p>
  */
 @RestController
@@ -34,11 +34,11 @@ public class SupportRequestController {
     }
 
     /**
-     * Crea una nuova richiesta di supporto per il team dell'utente.
-     * <p>Accessibile agli utenti con ruolo {@code TEAM_LEADER} o {@code TEAM_MEMBER}.</p>
+     * Creates a new support request for the user's team.
+     * <p>Accessible to users with the {@code TEAM_LEADER} or {@code TEAM_MEMBER} role.</p>
      *
-     * @param request DTO contenente il messaggio e l'hackathon di riferimento
-     * @return {@link SupportRequestResponseDTO} con i dettagli della richiesta creata
+     * @param request DTO containing the message and the referenced hackathon
+     * @return {@link SupportRequestResponseDTO} with the details of the created request
      */
     @PostMapping("/create")
     @PreAuthorize("hasAnyRole('TEAM_LEADER', 'TEAM_MEMBER')")
@@ -50,18 +50,18 @@ public class SupportRequestController {
     }
 
     /**
-     * Restituisce tutte le richieste di supporto per un hackathon.
-     * <p>Accessibile solo agli utenti con ruolo {@code MENTOR}.
-     * Il mentore deve essere assegnato all'hackathon specificato.</p>
+     * Returns all support requests for a hackathon.
+     * <p>Accessible only to users with the {@code MENTOR} role.
+     * The mentor must be assigned to the specified hackathon.</p>
      *
-     * @param hackathonId l'ID dell'hackathon di cui recuperare le richieste
-     * @return lista di {@link SupportRequestResponseDTO}
+     * @param hackathonId the ID of the hackathon whose requests to retrieve
+     * @return list of {@link SupportRequestResponseDTO}
      */
     @GetMapping("/getAll")
     @PreAuthorize("hasRole('MENTOR')")
     public ResponseEntity<List<SupportRequestResponseDTO>> getRequestsForHackathon(@RequestParam
-                                                                                       @NotNull(message = "L'id deve essere maggiore di 0")
-                                                                                       @Positive(message = "L'id deve essere un numero positivo")
+                                                                                       @NotNull(message = "The ID must be greater than 0")
+                                                                                       @Positive(message = "The ID must be a positive number")
                                                                                        Long hackathonId) {
         Long mentorId = SecurityUtils.getAuthenticatedUserId();
 
@@ -70,12 +70,12 @@ public class SupportRequestController {
     }
 
     /**
-     * Pianifica una chiamata di supporto per una richiesta esistente.
-     * <p>Accessibile solo agli utenti con ruolo {@code MENTOR}.
-     * Genera un link per la videochiamata tramite il servizio calendario integrato (Adapter pattern).</p>
+     * Schedules a support call for an existing request.
+     * <p>Accessible only to users with the {@code MENTOR} role.
+     * Generates a video call link via the integrated calendar service (Adapter pattern).</p>
      *
-     * @param request DTO contenente l'ID della richiesta e i dettagli della chiamata
-     * @return {@link SupportRequestResponseDTO} con il link alla chiamata pianificata
+     * @param request DTO containing the request ID and call details
+     * @return {@link SupportRequestResponseDTO} with the link to the scheduled call
      */
     @PostMapping("/scheduleCall")
     @PreAuthorize("hasRole('MENTOR')")

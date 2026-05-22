@@ -16,12 +16,12 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 
 /**
- * Filtro personalizzato per l'autenticazione basata su JWT.
+ * Custom filter for JWT-based authentication.
  * <p>
- * Estende {@link OncePerRequestFilter} per garantire che venga eseguito
- * una sola volta per ogni richiesta HTTP. Intercetta le richieste,
- * estrae il token JWT dall'header "Authorization", lo valida e, se valido,
- * imposta l'autenticazione nel {@link SecurityContextHolder}.
+ * Extends {@link OncePerRequestFilter} to ensure it is executed
+ * only once per HTTP request. It intercepts requests,
+ * extracts the JWT token from the "Authorization" header, validates it,
+ * and if valid, sets the authentication in the {@link SecurityContextHolder}.
  * </p>
  */
 @Component
@@ -42,7 +42,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
 
-        // Escludi H2 console e Swagger dal filtro JWT
+        // Exclude H2 console and Swagger from the JWT filter
         String path = request.getRequestURI();
         if (path.startsWith("/h2-console") || path.startsWith("/swagger-ui") || path.startsWith("/v3/api-docs")) {
             filterChain.doFilter(request, response);
@@ -53,25 +53,25 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         final String jwt;
         final String userEmail;
 
-        // 1. Controlliamo se c'è l'header Authorization e se inizia con "Bearer "
+        // 1. Check whether the Authorization header is present and starts with "Bearer "
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        // 2. Estraiamo il token (togliendo i primi 7 caratteri "Bearer ")
+        // 2. Extract the token (removing the first 7 characters "Bearer ")
         jwt = authHeader.substring(7);
 
-        // 3. Estraiamo l'email dal token
+        // 3. Extract the email from the token
         userEmail = jwtService.extractUsername(jwt);
 
-        // 4. Se abbiamo l'email e l'utente non è ancora autenticato nel contesto di Spring...
+        // 4. If we have the email and the user is not yet authenticated in the Spring context...
         if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-            // Carichiamo l'utente dal database
+            // Load the user from the database
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
 
-            // 5. Se il token è valido, creiamo l'oggetto di autenticazione e lo diamo a Spring
+            // 5. If the token is valid, create the authentication object and hand it to Spring
             if (jwtService.isTokenValid(jwt, userDetails)) {
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                         userDetails,
@@ -80,12 +80,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 );
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
-                // Salviamo l'autenticazione nel contesto. Da questo momento la richiesta è "Autorizzata"
+                // Store the authentication in the context. From this point the request is "Authorized"
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }
         }
 
-        // Passiamo la palla al prossimo filtro (o al Controller)
+        // Pass control to the next filter (or to the Controller)
         filterChain.doFilter(request, response);
     }
 }

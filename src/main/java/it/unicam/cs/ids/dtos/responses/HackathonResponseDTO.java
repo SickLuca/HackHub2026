@@ -16,7 +16,7 @@ public record HackathonResponseDTO(
         String location,
         Integer maxDimensionOfTeam,
         HackathonStatus status,
-        String organizerName,  // Solo le info essenziali, non l'oggetto StaffUser
+        String organizerName,  // Only essential info, not StaffUser object
         String judgeName,
         List<String> mentorNames,
         String winnerTeamName

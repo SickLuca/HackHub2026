@@ -1,16 +1,16 @@
 package it.unicam.cs.ids.utils.adapter;
 
 /**
- * Interfaccia target per il pattern Adapter (gestione calendari).
+ * Target interface for the Adapter pattern (calendar management).
  * <p>
- * Definisce un contratto comune per la generazione di link ai meeting,
- * nascondendo la complessità e le differenze delle API dei vari provider 
- * (es. Google Meet, Calendly) dal resto dell'applicazione.
+ * Defines a common contract for generating meeting links,
+ * hiding the complexity and differences of the APIs of various providers
+ * (e.g. Google Meet, Calendly) from the rest of the application.
  * </p>
  */
 public interface ICalendarService {
     /**
-     * Genera un link di prenotazione per il calendario esterno.
+     * Generates a booking link for the external calendar.
      */
     String generateMeetingLink(String mentorName, String teamName);
 }

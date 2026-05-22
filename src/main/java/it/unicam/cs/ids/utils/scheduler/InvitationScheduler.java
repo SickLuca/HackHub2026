@@ -11,10 +11,10 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * Scheduler per le operazioni periodiche sugli Inviti.
+ * Scheduler for periodic operations on Invitations.
  * <p>
- * Esegue task in background per controllare quali inviti abbiano superato
- * il limite massimo di tempo consentito e aggiorna il loro stato a EXPIRED.
+ * Runs background tasks to check which invitations have exceeded
+ * the maximum allowed time and updates their status to EXPIRED.
  * </p>
  */
 @Component

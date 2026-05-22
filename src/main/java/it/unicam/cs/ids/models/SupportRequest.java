@@ -9,11 +9,11 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 
 /**
- * Entità che rappresenta una richiesta di supporto creata da un team.
+ * Entity representing a support request created by a team.
  * <p>
- * Utilizzata dai team per richiedere assistenza tecnica o generica
- * ai mentori di un hackathon. Permette inoltre di pianificare un incontro
- * tramite un link di videochiamata.
+ * Used by teams to request technical or general assistance
+ * from hackathon mentors. Also allows scheduling a meeting
+ * via a video call link.
  * </p>
  */
 @Entity
@@ -27,13 +27,13 @@ public class SupportRequest {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // La richiesta è associata a un Team
+    // The request is associated with a Team
     @ManyToOne
     @JoinColumn(name = "team_id", nullable = false)
     private Team team;
 
-    // Colleghiamo anche l'Hackathon direttamente per facilitare
-    // le query dei mentori (che sono assegnati all'hackathon)
+    // Also linking the Hackathon directly to simplify
+    // queries by mentors (who are assigned to the hackathon)
     @ManyToOne
     @JoinColumn(name = "hackathon_id", nullable = false)
     private Hackathon hackathon;
@@ -50,7 +50,6 @@ public class SupportRequest {
 
     private LocalDateTime meetingDate;
 
-    //TODO: scadenza inviti?
     @Column(nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 }

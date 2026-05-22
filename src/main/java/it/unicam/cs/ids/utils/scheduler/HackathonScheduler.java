@@ -11,11 +11,11 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * Scheduler per le operazioni periodiche sugli Hackathon e sulle relative Submission.
+ * Scheduler for periodic operations on Hackathons and their related Submissions.
  * <p>
- * Verifica a intervalli regolari le scadenze (es. registrationDeadline, submitDeadline)
- * e aggiorna automaticamente gli stati (es. da REGISTRATION_OPEN a IN_PROGRESS,
- * e da IN_PROGRESS a CLOSED) oltre allo stato delle relative submission.
+ * Periodically checks deadlines (e.g. registrationDeadline, submitDeadline)
+ * and automatically updates statuses (e.g. from REGISTRATION_OPEN to IN_PROGRESS,
+ * and from IN_PROGRESS to CLOSED) as well as the status of related submissions.
  * </p>
  */
 @Component
@@ -36,14 +36,14 @@ public class HackathonScheduler {
     public void updateHackathonStatuses() {
         LocalDateTime now = LocalDateTime.now();
 
-        // --- 1. Da REGISTRATION a IN_PROGRESS ---
-        // Recuperiamo tutti gli hackathon in fase di registrazione
+        // --- 1. From REGISTRATION to IN_PROGRESS ---
+        // Retrieve all hackathons in the registration phase
         List<Hackathon> registrationHackathons = unitOfWork.getHackathonRepository().findAll().stream()
                 .filter(h -> h.getStatus() == HackathonStatus.REGISTRATION)
                 .toList();
 
         for (Hackathon h : registrationHackathons) {
-            // Se la data di scadenza iscrizioni è passata
+            // If the registration deadline has passed
             if (now.isAfter(h.getRegistrationDeadline())) {
                 h.setStatus(HackathonStatus.IN_PROGRESS);
                 unitOfWork.getHackathonRepository().save(h);
@@ -51,21 +51,21 @@ public class HackathonScheduler {
             }
         }
 
-        // --- 2. Da IN_PROGRESS a UNDER_EVALUATION ---
-        // Recuperiamo tutti gli hackathon in corso
+        // --- 2. From IN_PROGRESS to UNDER_EVALUATION ---
+        // Retrieve all hackathons currently in progress
         List<Hackathon> inProgressHackathons = unitOfWork.getHackathonRepository().findAll().stream()
                 .filter(h -> h.getStatus() == HackathonStatus.IN_PROGRESS)
                 .toList();
 
         for (Hackathon h : inProgressHackathons) {
-            // Se la data limite per sottomissioni è passata
+            // If the submission deadline has passed
             if (now.isAfter(h.getSubmitDeadline())) {
 
-                // 1. Cambiamo lo stato dell'Hackathon
+                // 1. Change the Hackathon status
                 h.setStatus(HackathonStatus.UNDER_EVALUATION);
                 unitOfWork.getHackathonRepository().save(h);
 
-                // 2. Chiudiamo tutte le sottomissioni OPEN di questo hackathon
+                // 2. Close all OPEN submissions for this hackathon
                 List<Submission> submissions = unitOfWork.getSubmissionRepository().findByHackathonId(h.getId());
                 for (Submission sub : submissions) {
                     if (sub.getStatus() == SubmissionStatus.OPEN) {

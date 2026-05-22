@@ -5,15 +5,15 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
 public record CreateReportDTO(
-        @NotNull(message = "L'ID del team da segnalare è obbligatorio")
-        @Positive(message = "L'ID  deve essere un numero positivo valido")
+        @NotNull(message = "The ID of the team to report is required")
+        @Positive(message = "The ID must be a valid positive number")
         Long teamId,
 
-        @NotNull(message = "L'ID dell'hackathon di riferimento è obbligatorio")
-        @Positive(message = "L'ID  deve essere un numero positivo valido")
+        @NotNull(message = "The ID of the referenced hackathon is required")
+        @Positive(message = "The ID must be a valid positive number")
         Long hackathonId,
 
-        @NotBlank(message = "Deve essere presente una motivazione per la segnalazione")
+        @NotBlank(message = "A reason for the report must be provided")
         String description
 ) {
 }

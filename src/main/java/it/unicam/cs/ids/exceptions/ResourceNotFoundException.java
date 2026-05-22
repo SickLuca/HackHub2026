@@ -1,6 +1,6 @@
 package it.unicam.cs.ids.exceptions;
 
-// Eccezione per risorse non trovate (es. Hackathon, Team, Utente non trovato)
+// Exception for resources not found (e.g. Hackathon, Team, User not found)
 public class ResourceNotFoundException extends RuntimeException {
     public ResourceNotFoundException(String message) {
         super(message);

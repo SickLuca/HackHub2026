@@ -17,10 +17,10 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * Controller REST per la gestione dei report/segnalazioni.
+ * REST controller for managing reports/flagging.
  * <p>
- * Permette ai mentori di creare report relativi ai team seguiti
- * e agli organizzatori di consultarli e rispondere con azioni correttive.
+ * Allows mentors to create reports on monitored teams
+ * and organizers to review and respond with corrective actions.
  * </p>
  */
 @RestController
@@ -35,12 +35,12 @@ public class ReportController {
     }
 
     /**
-     * Crea un nuovo report su un team all'interno di un hackathon.
-     * <p>Accessibile solo agli utenti con ruolo {@code MENTOR}.
-     * Il mentore deve essere assegnato all'hackathon di riferimento.</p>
+     * Creates a new report on a team within a hackathon.
+     * <p>Accessible only to users with the {@code MENTOR} role.
+     * The mentor must be assigned to the referenced hackathon.</p>
      *
-     * @param request DTO contenente i dettagli del report (hackathon, team, descrizione)
-     * @return {@link ReportResponseDTO} con i dettagli del report appena creato
+     * @param request DTO containing the report details (hackathon, team, description)
+     * @return {@link ReportResponseDTO} with the details of the newly created report
      */
     @PostMapping("/create")
     @PreAuthorize("hasRole('MENTOR')")
@@ -52,18 +52,18 @@ public class ReportController {
     }
 
     /**
-     * Restituisce tutti i report associati a un determinato hackathon.
-     * <p>Accessibile solo agli utenti con ruolo {@code ORGANIZER}.
-     * L'organizzatore deve essere il proprietario dell'hackathon.</p>
+     * Returns all reports associated with a specific hackathon.
+     * <p>Accessible only to users with the {@code ORGANIZER} role.
+     * The organizer must be the owner of the hackathon.</p>
      *
-     * @param hackathonId l'ID dell'hackathon di cui recuperare i report
-     * @return lista di {@link ReportResponseDTO} con i report dell'hackathon specificato
+     * @param hackathonId the ID of the hackathon whose reports to retrieve
+     * @return list of {@link ReportResponseDTO} with the reports for the specified hackathon
      */
     @GetMapping("/getAll")
     @PreAuthorize("hasRole('ORGANIZER')")
     public ResponseEntity<List<ReportResponseDTO>> getReportsForHackathon(@RequestParam
-                                                                              @NotNull(message = "L'ID deve essere maggiore di 0")
-                                                                              @Positive(message = "L'ID dell'hackathon deve essere un numero positivo")
+                                                                              @NotNull(message = "The ID must be greater than 0")
+                                                                              @Positive(message = "The hackathon ID must be a positive number")
                                                                               Long hackathonId) {
         Long organizerId = SecurityUtils.getAuthenticatedUserId();
 
@@ -72,12 +72,12 @@ public class ReportController {
     }
 
     /**
-     * Risponde a un report esistente con un'azione da parte dell'organizzatore.
-     * <p>Accessibile solo agli utenti con ruolo {@code ORGANIZER}.
-     * Permette di aggiornare lo stato del report e aggiungere una risposta.</p>
+     * Responds to an existing report with an action from the organizer.
+     * <p>Accessible only to users with the {@code ORGANIZER} role.
+     * Allows updating the status of the report and adding a response.</p>
      *
-     * @param request DTO contenente l'ID del report, la risposta e il nuovo stato
-     * @return {@link ReportResponseDTO} con lo stato aggiornato del report
+     * @param request DTO containing the report ID, the response, and the new status
+     * @return {@link ReportResponseDTO} with the updated report status
      */
     @PostMapping("/respond")
     @PreAuthorize("hasRole('ORGANIZER')")

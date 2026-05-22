@@ -7,11 +7,11 @@ import jakarta.validation.constraints.Positive;
 
 public record CreateInvitationDTO(
 
-         @NotBlank(message = "La descrizione è obbligatoria")
+         @NotBlank(message = "The description is required")
          String description,
 
-         @NotNull(message = "L'ID dell'utente da invitare è obbligatorio")
-         @Positive(message = "L'ID dell'utente deve essere un numero positivo valido")
+         @NotNull(message = "The ID of the user to invite is required")
+         @Positive(message = "The user ID must be a valid positive number")
          Long toUserId
 ) {
 }

@@ -45,13 +45,13 @@ public class DatabaseSeeder implements CommandLineRunner {
     @Transactional
     public void run(String... args) throws Exception {
         if (staffRepo.count() > 0) {
-            System.out.println("Database già popolato. Skip del seeding.");
+            System.out.println("Database already populated. Skipping seeding.");
             return;
         }
 
-        System.out.println("Inizio popolamento del database con dati fittizi...");
+        System.out.println("Starting database population with sample data...");
 
-        // 1. CREAZIONE STAFF
+        // 1. CREATE STAFF
         StaffUser organizer1 = createStaff("Alice", "Organizzatrice", "alice@hackhub.com", StaffRole.ORGANIZER);
         StaffUser organizer2 = createStaff("Marco", "Ferrari", "marco@hackhub.com", StaffRole.ORGANIZER);
         StaffUser organizer3 = createStaff("Sara", "Conti", "sara@hackhub.com", StaffRole.ORGANIZER);
@@ -70,7 +70,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                 mentor1, mentor2, mentor3, mentor4));
 
 
-        // 2. CREAZIONE UTENTI DEFAULT
+        // 2. CREATE DEFAULT USERS
         DefaultUser leader1 = createUser("Mario", "Rossi", "mario@mail.com", UserRole.TEAM_LEADER);
         DefaultUser leader2 = createUser("Anna", "Neri", "anna@mail.com", UserRole.TEAM_LEADER);
         DefaultUser leader3 = createUser("Paolo", "Galli", "paolo@mail.com", UserRole.TEAM_LEADER);
@@ -89,13 +89,13 @@ public class DatabaseSeeder implements CommandLineRunner {
                 member1, member2, member3, member4, member5,
                 noTeam1, noTeam2, noTeam3));
 
-        // 3. CREAZIONE HACKATHON (usiamo il tuo fantastico Builder!)
+        // 3. CREATE HACKATHONS (using the Builder!)
         Hackathon hackathon1 = new ConcreteHackathonBuilder()
                 .withName("Spring Boot Challenge 2026")
                 .withStartDate(LocalDateTime.now().minusDays(2))
                 .withRegistrationDeadline(LocalDateTime.now().minusDays(1))
                 .withSubmitDeadline(LocalDateTime.now().plusDays(4))
-                .withRegulation("Vietato copiare codice generato senza capirlo!")
+                .withRegulation("Vietato copiare codice generato con l'AI senza capirlo")
                 .withCashPrize(5000.0)
                 .withLocation("Online")
                 .withMaxDimensionOfTeam(4)
@@ -104,7 +104,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                 .withMentorsIds(List.of(mentor1, mentor2))
                 .build();
 
-        // Forziamo lo stato a IN_PROGRESS per testare sottomissioni e richieste
+        // Force the status to IN_PROGRESS to test submissions and requests
         hackathon1.setStatus(HackathonStatus.IN_PROGRESS);
         hackathonRepo.save(hackathon1);
 
@@ -113,7 +113,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                 .withStartDate(LocalDateTime.now().plusDays(10))
                 .withRegistrationDeadline(LocalDateTime.now().plusDays(7))
                 .withSubmitDeadline(LocalDateTime.now().plusDays(15))
-                .withRegulation("Ogni team deve usare almeno un modello di machine learning.")
+                .withRegulation("Ogni team deve usare almeno un modello di machine learning")
                 .withCashPrize(10000.0)
                 .withLocation("Milano")
                 .withMaxDimensionOfTeam(5)
@@ -128,7 +128,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                 .withStartDate(LocalDateTime.now().minusDays(20))
                 .withRegistrationDeadline(LocalDateTime.now().minusDays(25))
                 .withSubmitDeadline(LocalDateTime.now().minusDays(5))
-                .withRegulation("Nessun attacco a infrastrutture reali.")
+                .withRegulation("No attacchi ad infrastrutture reali.")
                 .withCashPrize(3000.0)
                 .withLocation("Roma")
                 .withMaxDimensionOfTeam(3)
@@ -141,7 +141,7 @@ public class DatabaseSeeder implements CommandLineRunner {
 
         hackathonRepo.saveAll(List.of(hackathon2, hackathon3));
 
-        // 4. CREAZIONE TEAM E ASSEGNAZIONE
+        // 4. CREATE TEAMS AND ASSIGN USERS
         Team teamAlpha = new Team();
         teamAlpha.setName("I Caffeinomani");
         teamAlpha.setSubscribedHackathon(hackathon1);
@@ -157,7 +157,7 @@ public class DatabaseSeeder implements CommandLineRunner {
         teamGamma.setSubscribedHackathon(hackathon3);
         teamRepo.save(teamGamma);
 
-        // Aggiorniamo gli utenti con il team
+        // Update users with their team
         leader1.setTeam(teamAlpha);
         member1.setTeam(teamAlpha);
         member2.setTeam(teamAlpha);
@@ -177,7 +177,7 @@ public class DatabaseSeeder implements CommandLineRunner {
         hackathon3.setTeams(teams);
         hackathon3.setWinner(teamAlpha);
 
-        // 5. CREAZIONE INVITO
+        // 5. CREATE INVITATION
         Invitation inv1 = new Invitation();
         inv1.setFromTeam(teamAlpha);
         inv1.setToUser(noTeam1);
@@ -201,7 +201,7 @@ public class DatabaseSeeder implements CommandLineRunner {
 
         invitationRepo.saveAll(List.of(inv1, inv2, inv3));
 
-        // 6. CREAZIONE SOTTOMISSIONE
+        // 6. CREATE SUBMISSION
         Submission sub1 = new Submission();
         sub1.setTeam(teamAlpha);
         sub1.setHackathon(hackathon1);
@@ -224,7 +224,7 @@ public class DatabaseSeeder implements CommandLineRunner {
 
         submissionRepo.saveAll(List.of(sub1, sub2));
 
-        // 7. CREAZIONE RICHIESTA DI SUPPORTO
+        // 7. CREATE SUPPORT REQUEST
         SupportRequest support1 = new SupportRequest();
         support1.setTeam(teamAlpha);
         support1.setHackathon(hackathon1);
@@ -243,7 +243,7 @@ public class DatabaseSeeder implements CommandLineRunner {
 
         supportRepo.saveAll(List.of(support1, support2));
 
-        // 8. CREAZIONE SEGNALAZIONE (REPORT)
+        // 8. CREATE REPORT
         Report report1 = new Report();
         report1.setMentor(mentor1);
         report1.setTeam(teamAlpha);
@@ -264,7 +264,7 @@ public class DatabaseSeeder implements CommandLineRunner {
 
         reportRepo.saveAll(List.of(report1, report2));
 
-        System.out.println("...Database popolato con successo!");
+        System.out.println("...Database populated successfully!");
 /*
         System.out.println("ID staff: " + organizer1.getId() + " " + judge1.getId() + " " + mentor1.getId() + " " + mentor2.getId());
         System.out.println("ID utenti: " + leader1.getId() + " " + member1.getId() + " " + noTeam1.getId());
@@ -278,7 +278,7 @@ public class DatabaseSeeder implements CommandLineRunner {
  */
     }
 
-    // Metodi di utilità per mantenere il codice pulito
+    // Utility methods to keep the code clean
     private StaffUser createStaff(String name, String surname, String email, StaffRole role) {
         StaffUser user = new StaffUser();
         user.setName(name);

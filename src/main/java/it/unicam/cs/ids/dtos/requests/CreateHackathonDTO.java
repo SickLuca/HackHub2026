@@ -6,57 +6,57 @@ import java.util.List;
 
 public record CreateHackathonDTO(
 
-        @NotBlank(message = "Il nome dell'hackathon è obbligatorio")
-        @Size(min = 3, max = 100, message = "Il nome deve avere tra 3 e 100 caratteri")
+        @NotBlank(message = "The hackathon name is required")
+        @Size(min = 3, max = 100, message = "The name must be between 3 and 100 characters")
         String name,
 
-        @NotNull(message = "La data di inizio non può essere nulla")
-        @Future(message = "La data di inizio deve essere nel futuro")
+        @NotNull(message = "The start date cannot be null")
+        @Future(message = "The start date must be in the future")
         LocalDateTime startDate,
 
-        @NotNull(message = "La scadenza delle iscrizioni non può essere nulla")
-        @Future(message = "La scadenza delle iscrizioni deve essere nel futuro")
+        @NotNull(message = "The registration deadline cannot be null")
+        @Future(message = "The registration deadline must be in the future")
         LocalDateTime registrationDeadline,
 
-        @NotNull(message = "La scadenza delle consegne non può essere nulla")
-        @Future(message = "La scadenza delle consegne deve essere nel futuro")
+        @NotNull(message = "The submission deadline cannot be null")
+        @Future(message = "The submission deadline must be in the future")
         LocalDateTime submitDeadline,
 
-        @NotBlank(message = "Il regolamento è obbligatorio")
+        @NotBlank(message = "The regulation is required")
         String regulation,
 
-        @PositiveOrZero(message = "Il premio in denaro non può essere negativo")
+        @PositiveOrZero(message = "The cash prize cannot be negative")
         Double cashPrize,
 
-        @NotBlank(message = "Il luogo è obbligatorio")
+        @NotBlank(message = "The location is required")
         String location,
 
-        @Min(value = 1, message = "La dimensione massima del team deve essere almeno 1")
+        @Min(value = 1, message = "The maximum team size must be at least 1")
         Integer maxDimensionOfTeam,
 
-        @NotNull(message = "Devi assegnare un giudice")
+        @NotNull(message = "You must assign a judge")
         Long judgeId,
 
-        @NotEmpty(message = "Devi assegnare almeno un mentore")
+        @NotEmpty(message = "You must assign at least one mentor")
         List<Long> mentorsIdS
 ) {
 
     /**
-     * Questo metodo viene invocato automaticamente da Spring Validation.
-     * Controlla la coerenza cronologica delle date.
+     * This method is automatically invoked by Spring Validation.
+     * Checks the chronological consistency of the dates.
      */
-    @AssertTrue(message = "Errore di cronologia: la registrazione deve finire prima dell'inizio, e la consegna deve avvenire dopo l'inizio dell'hackathon.")
+    @AssertTrue(message = "Chronology error: registration must end before the start date, and submission must occur after the hackathon start.")
     public boolean isDatesValid() {
-        // Se una delle date è null, restituiamo true per saltare questo controllo.
-        // Ci penseranno le annotazioni @NotNull sopra a bloccare la richiesta,
-        // evitando così un NullPointerException qui dentro.
+        // If any date is null, return true to skip this check.
+        // The @NotNull annotations above will block the request,
+        // preventing a NullPointerException here.
         if (startDate == null || registrationDeadline == null || submitDeadline == null) {
             return true;
         }
 
-        // Regola di business:
-        // 1. La scadenza iscrizioni deve essere prima o uguale alla data di inizio
-        // 2. La scadenza consegne deve essere dopo la data di inizio
+        // Business rules:
+        // 1. The registration deadline must be before or equal to the start date
+        // 2. The submission deadline must be after the start date
         return (registrationDeadline.isBefore(startDate) || registrationDeadline.isEqual(startDate))
                 && submitDeadline.isAfter(startDate) && submitDeadline.isAfter(registrationDeadline);
     }

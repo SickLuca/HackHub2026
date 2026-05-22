@@ -10,14 +10,14 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-//TODO: Jpa, da fare prima di altri TODO
+//TODO: JPA, to be done before other TODOs
 
 /**
- * Entità che rappresenta un Hackathon all'interno del sistema.
+ * Entity representing a Hackathon within the system.
  * <p>
- * Memorizza tutte le informazioni di un evento, incluse le date di
- * registrazione e sottomissione, il premio, il regolamento e le associazioni
- * con lo staff (organizzatore, mentori, giudice) e i team partecipanti.
+ * Stores all the information about an event, including registration
+ * and submission dates, the prize, the regulation, and the associations
+ * with staff (organizer, mentors, judge) and participating teams.
  * </p>
  */
 @Entity
@@ -39,7 +39,7 @@ public class Hackathon {
 
     private LocalDateTime submitDeadline;
 
-    @Column(columnDefinition = "TEXT") // Utile per testi lunghi
+    @Column(columnDefinition = "TEXT") // Useful for long text fields
     private String regulation;
 
     private Double cashPrize;
@@ -51,20 +51,20 @@ public class Hackathon {
     @Enumerated(EnumType.STRING)
     private HackathonStatus status;
 
-    // Molti Hackathon possono avere lo stesso Organizzatore
+    // Many Hackathons can share the same Organizer
     @ManyToOne
     @JoinColumn(name = "organizer_id")
     private StaffUser organizer;
 
-    // Molti Hackathon possono avere lo stesso Giudice
+    // Many Hackathons can share the same Judge
     @ManyToOne
     @JoinColumn(name = "judge_id")
     private StaffUser judge;
 
-    // Un Hackathon ha molti Mentori, e un Mentore può partecipare a molti Hackathon
+    // A Hackathon has many Mentors, and a Mentor can participate in many Hackathons
     @ManyToMany
     @JoinTable(
-            name = "hackathon_mentors", // Tabella di collegamento (Join Table)
+            name = "hackathon_mentors", // Join table linking hackathons and mentors
             joinColumns = @JoinColumn(name = "hackathon_id"),
             inverseJoinColumns = @JoinColumn(name = "mentor_id")
     )

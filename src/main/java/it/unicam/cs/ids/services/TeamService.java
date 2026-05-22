@@ -20,12 +20,12 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 
 /**
- * Servizio per la gestione dei team.
+ * Service for managing teams.
  * <p>
- * Contiene la logica per la creazione di un nuovo team, l'iscrizione dello stesso
- * a un hackathon, il recupero delle informazioni del team dell'utente corrente
- * e la gestione dell'abbandono da parte di un membro (con logica per gestire
- * l'eventuale chiusura del team se a uscire è il leader).
+ * Contains the logic for creating a new team, registering it
+ * for a hackathon, retrieving the current user's team information,
+ * and handling a member leaving (including logic for disbanding
+ * the team if the leader leaves).
  * </p>
  */
 @Service
@@ -40,16 +40,16 @@ public class TeamService implements ITeamService {
 
     @Override
     public TeamResponseDTO createTeam(CreateTeamDTO request, Long creatorId) {
-        // 1. Recupero l'utente in modo sicuro
+        // 1. Retrieve the user safely
         DefaultUser creator = unitOfWork.getDefaultUserRepository().findById(creatorId)
-                .orElseThrow(() -> new ResourceNotFoundException("Utente non trovato nel sistema"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found in the system"));
 
-        // 2. Controllo regole di business: un utente può appartenere a un solo team
+        // 2. Business rule check: a user can only belong to one team
         if (creator.getTeam() != null || creator.getRole() != UserRole.USER_NO_TEAM) {
-            throw new RuleViolationException("L'utente appartiene già a un team!");
+            throw new RuleViolationException("The user already belongs to a team!");
         }
 
-        // 3. Creazione dell'entità Team
+        // 3. Create the Team entity
         Team newTeam = new Team();
         newTeam.setName(request.name());
         newTeam.setMembers(new ArrayList<>());
@@ -66,37 +66,37 @@ public class TeamService implements ITeamService {
 
     @Override
     public TeamResponseDTO subscribeToHackathon(SubscribeTeamDTO request, Long leaderId) {
-        // 1. Recupero l'utente autenticato e verifico il ruolo
+        // 1. Retrieve the authenticated user and verify the role
         DefaultUser leader = unitOfWork.getDefaultUserRepository().findById(leaderId)
-                .orElseThrow(() -> new ResourceNotFoundException("Utente non trovato"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         if (leader.getRole() != UserRole.TEAM_LEADER) {
-            throw new UnauthorizedActionException("Solo il leader può iscrivere il team a un hackathon");
+            throw new UnauthorizedActionException("Only the leader can register the team for a hackathon");
         }
 
-        // 2. Deduzione sicura del team
+        // 2. Safely derive the team
         Team team = leader.getTeam();
         if (team == null) {
-            throw new RuleViolationException("Il team non esiste.");
+            throw new RuleViolationException("The team does not exist.");
         }
 
-        // 3. Recupero Hackathon
+        // 3. Retrieve the Hackathon
         Hackathon hackathon = unitOfWork.getHackathonRepository().findById(request.hackathonId())
-                .orElseThrow(() -> new ResourceNotFoundException("Hackathon non trovato"));
+                .orElseThrow(() -> new ResourceNotFoundException("Hackathon not found"));
 
         if (hackathon.getStatus() != HackathonStatus.REGISTRATION) {
-            throw new RuleViolationException("L'Hackathon non è in fase di registrazione");
+            throw new RuleViolationException("The Hackathon is not in the registration phase");
         }
 
         if (team.getSubscribedHackathon() != null) {
-            throw new RuleViolationException("Il team è già iscritto a un Hackathon.");
+            throw new RuleViolationException("The team is already registered for a Hackathon.");
         }
 
         if (team.getMembers().size() > hackathon.getMaxDimensionOfTeam()) {
-            throw new RuleViolationException("Il team supera la dimensione massima per questo hackathon");
+            throw new RuleViolationException("The team exceeds the maximum size for this hackathon");
         }
 
-        // 4. Aggiorniamo sul database
+        // 4. Update the database
         team.setSubscribedHackathon(hackathon);
         hackathon.getTeams().add(team);
 
@@ -109,13 +109,13 @@ public class TeamService implements ITeamService {
     public TeamResponseDTO getTeamByCurrentUser(Long userId){
         DefaultUser user = unitOfWork.getDefaultUserRepository().findById(userId).orElse(null);
         if(user == null){
-            throw new ResourceNotFoundException("Utente non trovato");
+            throw new ResourceNotFoundException("User not found");
         }
 
         Team team = user.getTeam();
 
         if(team == null){
-            throw new RuleViolationException("L'utente non appartiene a nessun team");
+            throw new RuleViolationException("The user does not belong to any team");
         }
 
         return mapToDTO(team);
@@ -123,33 +123,33 @@ public class TeamService implements ITeamService {
 
     @Override
     public void leaveTeam(Long userId) {
-        // 1. Recupero l'utente
+        // 1. Retrieve the user
         DefaultUser user = unitOfWork.getDefaultUserRepository().findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Utente non trovato"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         Team team = user.getTeam();
         if (team == null) {
-            throw new RuleViolationException("Non appartieni a nessun team.");
+            throw new RuleViolationException("You do not belong to any team.");
         }
 
-        // Salviamo il ruolo prima di modificarlo
+        // Save the role before modifying it
         boolean wasLeader = user.getRole() == UserRole.TEAM_LEADER;
 
-        // 2. Scollego l'utente dal team (aggiorno memoria ed entità)
+        // 2. Disconnect the user from the team (update memory and entity)
         team.getMembers().remove(user);
         user.setTeam(null);
         user.setRole(UserRole.USER_NO_TEAM);
 
-        // 3. Gestisco il destino del team
+        // 3. Handle the team's fate
         if (team.getMembers().isEmpty()) {
-            // Il team è vuoto: scolleghiamo l'hackathon (se presente) e lo eliminiamo
+            // The team is empty: disconnect the hackathon (if any) and delete the team
             if (team.getSubscribedHackathon() != null) {
                 team.getSubscribedHackathon().getTeams().remove(team);
             }
             unitOfWork.getTeamRepository().delete(team);
 
         } else {
-            // Il team ha ancora membri: se è uscito il leader, promuovo il primo della lista
+            // The team still has members: if the leader left, promote the first in the list
             if (wasLeader) {
                 DefaultUser newLeader = team.getMembers().getFirst();
                 newLeader.setRole(UserRole.TEAM_LEADER);
@@ -158,7 +158,7 @@ public class TeamService implements ITeamService {
             unitOfWork.getTeamRepository().save(team);
         }
 
-        // 4. Salvo l'utente aggiornato
+        // 4. Save the updated user
         unitOfWork.getDefaultUserRepository().save(user);
     }
     

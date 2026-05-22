@@ -19,11 +19,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Servizio per la gestione delle richieste di supporto tecnico/mentoring.
+ * Service for managing technical support/mentoring requests.
  * <p>
- * Implementa le funzionalità per la creazione di richieste di aiuto
- * da parte dei team e permette ai mentori di programmare call di supporto
- * (appoggiandosi all'{@link ICalendarService} per generare i link ai meeting).
+ * Implements the functionality for teams to create help requests
+ * and allows mentors to schedule support calls
+ * (relying on the {@link ICalendarService} to generate meeting links).
  * </p>
  */
 @Service
@@ -40,32 +40,32 @@ public class SupportRequestService implements ISupportRequestService {
 
     @Override
     public SupportRequestResponseDTO createRequest(CreateSupportRequestDTO requestDTO, Long userId) {
-        // 1. Recupero Utente e Team in modo sicuro dal token
+        // 1. Retrieve User and Team safely from the token
         DefaultUser user = unitOfWork.getDefaultUserRepository().findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Utente non trovato"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         Team team = user.getTeam();
         if (team == null) {
-            throw new RuleViolationException("Devi appartenere a un team per poter richiedere supporto.");
+            throw new RuleViolationException("You must belong to a team in order to request support.");
         }
 
         Hackathon hackathon = unitOfWork.getHackathonRepository().findById(requestDTO.hackathonId()).orElse(null);
-        if (hackathon == null) throw new ResourceNotFoundException("Hackathon non trovato");
+        if (hackathon == null) throw new ResourceNotFoundException("Hackathon not found");
 
-        // (Opzionale) Controllare che il Team sia effettivamente iscritto a questo Hackathon
+        // (Optional) Verify that the Team is actually registered for this Hackathon
         if (!team.getSubscribedHackathon().getId().equals(hackathon.getId())) {
-            throw new RuleViolationException("Il team non è iscritto a questo Hackathon");
+            throw new RuleViolationException("The team is not registered for this Hackathon");
         }
 
         boolean exists = unitOfWork.getSupportRequestRepository().findByHackathonId(requestDTO.hackathonId()).stream()
-                .filter(request -> request.getStatus().equals(SupportRequestStatus.PENDING)) //Filtro le PENDING
-                .anyMatch(request -> request.getTeam().getId().equals(team.getId())); //Vedo se esiste una richiesta a nome del team in questione
+                .filter(request -> request.getStatus().equals(SupportRequestStatus.PENDING)) //Filter PENDING requests
+                .anyMatch(request -> request.getTeam().getId().equals(team.getId())); //Check if a request exists for this team
 
         if (exists) {
-            throw new RuleViolationException("Esiste già una richiesta di supporto in attesa per il tuo team in questo Hackathon");
+            throw new RuleViolationException("A pending support request already exists for your team in this Hackathon");
         }
 
-        // 2. Creazione entità
+        // 2. Create the entity
         SupportRequest request = new SupportRequest();
         request.setTeam(team);
         request.setHackathon(hackathon);
@@ -73,37 +73,37 @@ public class SupportRequestService implements ISupportRequestService {
         request.setStatus(SupportRequestStatus.PENDING);
         request.setCreatedAt(LocalDateTime.now());
 
-        // 3. Salvataggio
+        // 3. Save
         unitOfWork.getSupportRequestRepository().save(request);
 
-        //aggiorno la relazione bidirezionale in memoria
+        //update the bidirectional relationship in memory
         team.getSupportRequests().add(request);
 
-        //aggiorno la relazione bidirezionale in memoria
+        //update the bidirectional relationship in memory
         hackathon.getSupportRequests().add(request);
 
-        // 4. Ritorno DTO
+        // 4. Return DTO
         return mapToDTO(request);
 
     }
 
     @Override
     public List<SupportRequestResponseDTO> getRequestsForHackathon(Long hackathonId, Long mentorId) {
-        // 1. (Sicurezza) Verifichiamo che l'utente sia davvero un mentore per questo Hackathon
+        // 1. (Security) Verify the user is actually a mentor for this Hackathon
         Hackathon hackathon = unitOfWork.getHackathonRepository().findById(hackathonId).orElse(null);
-        if (hackathon == null) throw new ResourceNotFoundException("Hackathon non trovato");
+        if (hackathon == null) throw new ResourceNotFoundException("Hackathon not found");
 
         boolean isMentor = hackathon.getMentors().stream()
                 .anyMatch(mentor -> mentor.getId().equals(mentorId));
 
         if (!isMentor) {
-            throw new UnauthorizedActionException("Non sei assegnato come mentore a questo Hackathon");
+            throw new UnauthorizedActionException("You are not assigned as a mentor for this Hackathon");
         }
 
-        // 2. Recuperiamo le richieste
+        // 2. Retrieve the requests
         List<SupportRequest> requests = unitOfWork.getSupportRequestRepository().findByHackathonId(hackathonId);
 
-        // 3. Mappiamo a DTO
+        // 3. Map to DTO
         return requests.stream()
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
@@ -112,32 +112,32 @@ public class SupportRequestService implements ISupportRequestService {
 
     @Override
     public SupportRequestResponseDTO scheduleCall(ScheduleCallDTO request, Long mentorId) {
-        // 1. Recupero la richiesta
+        // 1. Retrieve the request
         SupportRequest supportRequest = unitOfWork.getSupportRequestRepository().findById(request.supportRequestId())
-                .orElseThrow(() -> new ResourceNotFoundException("Richiesta di supporto non trovata"));
+                .orElseThrow(() -> new ResourceNotFoundException("Support request not found"));
 
 
-        // 2. Recupero il mentore
+        // 2. Retrieve the mentor
         StaffUser mentor = unitOfWork.getStaffUserRepository().findById(mentorId)
-                .orElseThrow(() -> new ResourceNotFoundException("Mentore non trovato"));
+                .orElseThrow(() -> new ResourceNotFoundException("Mentor not found"));
 
-        // 3. Verifico che la richiesta sia in stato PENDING
+        // 3. Verify that the request is in PENDING status
         if (supportRequest.getStatus() != SupportRequestStatus.PENDING) {
-            throw new RuleViolationException("Questa richiesta è già stata gestita o è chiusa.");
+            throw new RuleViolationException("This request has already been handled or is closed.");
         }
 
-        // 4. Verifico che il mentore sia assegnato all'hackathon di questa richiesta
+        // 4. Verify that the mentor is assigned to the hackathon of this request
         boolean isMentor = supportRequest.getHackathon().getMentors().stream()
                 .anyMatch(m -> m.getId().equals(mentorId));
 
         if (!isMentor) {
-            throw new UnauthorizedActionException("Non sei assegnato come mentore a questo Hackathon.");
+            throw new UnauthorizedActionException("You are not assigned as a mentor for this Hackathon.");
         }
 
-        // 5. Deleghiamo al sistema esterno la generazione del link
+        // 5. Delegate link generation to the external system
         String meetingLink = calendarService.generateMeetingLink(mentor.getName(), supportRequest.getTeam().getName());
 
-        // 6. Aggiorniamo l'entità
+        // 6. Update the entity
         supportRequest.setStatus(SupportRequestStatus.SCHEDULED);
         supportRequest.setMeetingLink(meetingLink);
         supportRequest.setMeetingDate(request.callDate());

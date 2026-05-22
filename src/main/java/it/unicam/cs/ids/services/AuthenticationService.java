@@ -15,11 +15,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 /**
- * Servizio responsabile della gestione dell'autenticazione degli utenti.
+ * Service responsible for managing user authentication.
  * <p>
- * Gestisce la registrazione di nuovi utenti, il login tramite credenziali
- * (email e password) e la generazione dei JSON Web Token (JWT) da restituire
- * ai client per l'autorizzazione delle chiamate successive.
+ * Handles registration of new users, login via credentials
+ * (email and password), and generation of JSON Web Tokens (JWT) to return
+ * to clients for authorizing subsequent requests.
  * </p>
  */
 @Service
@@ -41,7 +41,7 @@ public class AuthenticationService {
 
         boolean exists = unitOfWork.getUserRepository().findByEmail(request.email()).isPresent();
         if (exists) {
-            throw new InvalidInputException("Esiste già un utente con questa email: " + request.email());
+            throw new InvalidInputException("A user with this email already exists: " + request.email());
 
         }
 
@@ -49,9 +49,9 @@ public class AuthenticationService {
         user.setName(request.name());
         user.setSurname(request.surname());
         user.setEmail(request.email());
-        // CRITICO: Non salviamo mai la password in chiaro!
+        // CRITICAL: We never store the password in plaintext!
         user.setPassword(passwordEncoder.encode(request.password()));
-        user.setRole(UserRole.USER_NO_TEAM); // Di default un nuovo utente non ha team
+        user.setRole(UserRole.USER_NO_TEAM); // By default a new user has no team
 
         unitOfWork.getUserRepository().save(user);
 
@@ -60,12 +60,12 @@ public class AuthenticationService {
     }
 
     public AuthResponseDTO authenticate(LoginRequestDTO request) {
-        // Questo metodo lancia un'eccezione se le credenziali sono errate
+        // This method throws an exception if the credentials are incorrect
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.email(), request.password())
         );
 
-        // Se arriviamo qui, l'utente esiste e la password è corretta
+        // If we reach here, the user exists and the password is correct
         var user = unitOfWork.getUserRepository().findByEmail(request.email()).orElseThrow();
         var jwtToken = jwtService.generateToken(new CustomUserDetails(user));
 
